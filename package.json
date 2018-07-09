@@ -1,0 +1,18 @@
+{
+  "name": "electron-game-util",
+  "version": "1.0.0",
+  "description": "A set of utilities for games written in electron",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jacob McEwan",
+  "license": "ISC",
+  "dependencies": {
+    "electron": "^2.0.3",
+    "express": "^4.16.3",
+    "jquery": "^3.3.1",
+    "socket.io": "^2.1.1",
+    "uuid": "^3.3.2"
+  }
+}
