@@ -1,6 +1,6 @@
 const Point = require("./Point.js");
 
-exports = class Vector extends Point {
+module.exports = class Vector extends Point {
   constructor(x,y){
     super(x,y);
   }

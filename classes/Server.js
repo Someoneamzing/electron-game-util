@@ -2,7 +2,7 @@ const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
 
-exports = class Server {
+module.exports = class Server {
   constructor(port){
     this.port = port;
     this.app = express();
@@ -17,5 +17,9 @@ exports = class Server {
 
   send(event, data){
     this.io.emit(event, data);
+  }
+
+  begin(){
+    this.server.listen(this.port);
   }
 }

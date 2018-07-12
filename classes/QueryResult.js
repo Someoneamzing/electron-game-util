@@ -1,4 +1,4 @@
-exports = class QueryResult {
+class QueryResult {
   constructor(){
     this.groups = {};
     this.status = QueryResult.OK;
@@ -42,6 +42,8 @@ exports = class QueryResult {
     this.msg = "Empty";
   }
 }
+
+module.exports = QueryResult;
 
 Object.defineProperty(QueryResult, 'OK', {
   value: 0,

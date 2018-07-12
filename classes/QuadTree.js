@@ -1,13 +1,15 @@
 const Point = require("./Point.js");
 const Rectangle = require("./Rectangle.js");
 const Circle = require("./Circle.js");
+const QueryResult = require('./QueryResult.js');
 
 class QuadTree {
-  constructor(boundry, cap, level = 0) {
+  constructor(boundry, cap, grouped = false, level = 0) {
     if (!(boundry instanceof Rectangle)) {throw new Error("QuadTree: QuadTree requires boundry to be of type Rectangle. The provided value was of type " + boundry.constructor.name)};
     this.boundry = boundry;
     if (isNaN(Number(cap))) throw new Error("QuadTree: QuadTree requires cap to be a valid number or a value that is convertable to a number. The provided value was of type " + typeof cap);
     this.cap = Number(cap);
+    this.grouped = grouped;
     this.children = [];
     this.nodes = [];
     this.level = level;
@@ -57,25 +59,25 @@ class QuadTree {
     }
   }
 
-  query(range, found = new QueryResult(), first = true){
+  query(range, groups = 'any', found = new QueryResult(), first = true){
     if (!this.boundry.intersects(range)) return found;
     if (first) {
       found.addGroup('found');
     }
     if (this.nodes.length > 0) {
       for (let node of this.nodes){
-        node.query(range, found, false);
+        node.query(range, groups, found, false);
       }
     } else {
       for (let p of this.children){
-        if (range.intersects(p)) found.insertResult('found',p);
+        if (range.intersects(p)&&(groups == "any" || shareOne(groups, p.collisionGroups))) found.insertResult('found',p);
       }
     }
     if (first) found.finalise();
     return found;
   }
 
-  nearest(point, maxRange = this.boundry.w){
+  nearest(point, groups = 'any', maxRange = this.boundry.w){
     let going = true;
     let range = new Circle(point.x, point.y, 5);
     let res = new QueryResult();
@@ -85,7 +87,7 @@ class QuadTree {
       return res;
     }
     while (going) {
-      let found = this.query(range);
+      let found = this.query(range, groups);
       if (found.getGroup('found') && found.getGroup('found').length > 0){
         going = false;
         let closestDist = Infinity;
@@ -108,9 +110,21 @@ class QuadTree {
     res.finalise();
     return res;
   }
+
+  clear(){
+    if (this.nodes.length > 0){
+      for(let n of this.nodes){
+        n.clear();
+      }
+    }
+    this.children.length = 0;
+    this.nodes.length = 0;
+  }
 }
 
 QuadTree.TL = 0;
 QuadTree.TR = 1;
 QuadTree.BL = 2;
 QuadTree.BR = 3;
+
+module.exports = QuadTree;

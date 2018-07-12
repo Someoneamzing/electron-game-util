@@ -1,4 +1,4 @@
-exports = class Point {
+class Point {
   constructor(x,y){
     this.x = x;
     this.y = y;
@@ -24,3 +24,5 @@ exports = class Point {
     gc.stroke();
   }
 }
+
+module.exports = Point;

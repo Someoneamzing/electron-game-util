@@ -1,4 +1,4 @@
-exports = class Matrix {
+module.exports = class Matrix {
   constructor(r,c,f=0){
     this.fields = [];
     for(let i = 0; i < r; i ++){

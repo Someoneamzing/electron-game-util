@@ -1,7 +1,7 @@
 const Point = require('./Point.js');
 const Circle = require('./Circle.js');
 
-exports = class Rectangle extends Point {
+module.exports = class Rectangle extends Point {
   constructor(x,y,w,h) {
     super(x,y);
     this.w = w;

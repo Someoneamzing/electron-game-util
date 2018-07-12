@@ -26,37 +26,12 @@ const Sprite = require('./classes/Sprite.js');
 const TrackList = require('./classes/TrackList.js');
 const ConnectionManager = require('./classes/ConnectionManager.js');
 const Server = require('./classes/Server.js');
+const Client = require('./classes/Client.js');
+const CollisionGroup = require('./classes/CollisionGroup.js');
+const GameLoop = require('./classes/GameLoop.js');
+const ControlInterface = require('./classes/ControlInterface.js');
+const {clamp, sum, average, shareOne} = require('./classes/MathUtil.js');
 
 
-function clamp(n,low,high) {
-  return Math.min(Math.max(n,low),high);
-}
 
-function sum(list) {
-  if (list[0] instanceof Point) {
-    let totalx = 0;
-    let totaly = 0;
-    for (let p of list) {
-      totalx += p.x;
-      totaly += p.y;
-    }
-    return new Point(totalx,totaly);
-  } else {
-    let total = 0;
-    for (let p of list) {
-      total += p;
-    }
-    return total;
-  }
-}
-
-function average(list){
-  if (list[0] instanceof Point) {
-    let sumP = sum(list);
-    return new Point(sumP.x / list.length, sumP.y / list.length);
-  } else {
-    return sum(list)/list.length;
-  }
-}
-
-exports = {clamp, sum, average, Camera, Circle, ConnectionManager, GameCanvas, Matrix, NetworkWrapper, Point, QuadTree, QueryResult, Rectangle, Server, Sprite, TrackList, Vector};
+module.exports = {clamp, sum, average, shareOne, Camera, Circle, Client, CollisionGroup, ConnectionManager, ControlInterface, GameCanvas, GameLoop, Matrix, NetworkWrapper, Point, QuadTree, QueryResult, Rectangle, Server, Sprite, TrackList, Vector};

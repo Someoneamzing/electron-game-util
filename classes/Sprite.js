@@ -1,7 +1,7 @@
 const FILE_EXT_REG = (/(?:.+[\/\\])?[^\s\\\/]+\.([A-z]+)$/);
 const VALID_SPRITE_EXT = ['png','jpg','jpeg','gif'];
 
-exports = class Sprite extends Image {
+class Sprite extends Image {
   constructor(name,src,width,height,frameWidth,frameHeight,animate){
     super(width, height)
     this.name = name;
@@ -38,6 +38,8 @@ exports = class Sprite extends Image {
     }
   }
 }
+
+module.exports = Sprite;
 
 Sprite.list = {};
 Sprite.animate = [];

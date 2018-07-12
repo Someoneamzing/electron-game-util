@@ -35,11 +35,14 @@ Calls the remove method on the objects in its list identified by the elements in
 `void` `parseUpdatePack(Array pack)`  
 Calls the update method on the objects registered in its list identified by the `netID` property on each element of the provided array, using the element as the first parameter to the method.
 
-`void` `remove(obj)`  
+`void` `remove(Object obj)`  
 Removes the provided object from its list, and if its `side` property is equal to `ConnectionManager.SERVER` then it adds the provided object's `netID` to the removePack.
 
 `void` `update()`  
 Calls the same method on all of the objects registered in its list.
+
+`NetworkWrapped` `get(String netID)`  
+Retrives the NetworkWrapped object from its list with the given network ID.
 
 ## Examples
 ***A bare-bones TrackList use case***
