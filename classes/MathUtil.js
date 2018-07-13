@@ -1,6 +1,4 @@
 const Point = require("./Point.js");
-const Rectangle = require("./Rectangle.js");
-const Circle = require("./Circle.js");
 
 function clamp(n,low,high) {
   return Math.min(Math.max(n,low),high);

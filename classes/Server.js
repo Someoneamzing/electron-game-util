@@ -15,7 +15,7 @@ module.exports = class Server {
     this.io.on(event,f);
   }
 
-  send(event, data){
+  send(event, data, socketID){
     this.io.emit(event, data);
   }
 

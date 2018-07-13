@@ -2,7 +2,7 @@ const Mouse = require('./Mouse.js');
 
 class ControlInterface {
   constructor(canvas, client){
-    console.log(canvas);
+    //console.log(canvas);
     this.canvas = canvas;
     this.client = client;
     this.keys = {};
@@ -17,21 +17,21 @@ class ControlInterface {
           f();
         }
       }
-      console.log('Key Down');
+      //console.log('Key Down');
     })
 
     $(window).keyup((e)=>{
       let key = e.key.toUpperCase();
       this.keys[key] = false;
       this.client.send("controlinterface-key-update", this.getUpdatePkt());
-      console.log('Key Up');
+      //console.log('Key Up');
     })
 
     $(window).keypress((e)=>{
       let key = e.key.toUpperCase();
       this.keysPressed[key] = true;
       this.client.send("controlinterface-key-update", this.getUpdatePkt());
-      console.log('Key Pressed');
+      //console.log('Key Pressed');
     })
 
     this.client.send("controlinterface-init", this.getInitPkt());

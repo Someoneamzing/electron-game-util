@@ -20,7 +20,6 @@ module.exports = class Camera extends Point {
       this.y = y;
     } else {
       let pos = average(this.follow);
-      // console.log(pos);
       this.x = pos.x;
       this.y = pos.y;
     }

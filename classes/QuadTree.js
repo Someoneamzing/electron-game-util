@@ -1,6 +1,6 @@
 const Point = require("./Point.js");
-const Rectangle = require("./Rectangle.js");
-const Circle = require("./Circle.js");
+const {Circle, Rectangle} = require('./Shapes.js');
+const {clamp, sum, average, shareOne} = require('./MathUtil.js');
 const QueryResult = require('./QueryResult.js');
 
 class QuadTree {
@@ -78,6 +78,7 @@ class QuadTree {
   }
 
   nearest(point, groups = 'any', maxRange = this.boundry.w){
+    if (maxRange == 0) maxRange = this.boundry.w;
     let going = true;
     let range = new Circle(point.x, point.y, 5);
     let res = new QueryResult();

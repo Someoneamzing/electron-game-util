@@ -44,17 +44,13 @@ module.exports = class TrackList {
   parseRemovePack(pack){
     //console.log(pack);
     for(let id of pack){
-      console.log(id);
       this.list[id].remove();
     }
   }
 
   remove(obj){
-    console.log(this.type.name + ": Removing object with netID: " + obj.netID);
-    if (this.side == ConnectionManager.SERVER){this.removePack.push(obj.netID); console.log(this.removePack);}
-    console.log(this.list);
+    if (this.side == ConnectionManager.SERVER){this.removePack.push(obj.netID);}
     delete this.list[obj.netID];
-    console.log(this.list);
   }
 
   getAllInitPack(){

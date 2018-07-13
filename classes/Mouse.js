@@ -22,7 +22,6 @@ class Mouse extends Point {
       }
       this.move(e.offsetX + this.canvas.camera.x - this.canvas.w/2, e.offsetY + this.canvas.camera.y - this.canvas.h/2);
       this.control.update();
-      console.log("Mouse Down");
     }
 
     this.canvas.canvas.onmouseup = (e)=>{
@@ -39,7 +38,6 @@ class Mouse extends Point {
       }
       this.move(e.offsetX + this.canvas.camera.x - this.canvas.w/2, e.offsetY + this.canvas.camera.y - this.canvas.h/2);
       this.control.update();
-      console.log("Mouse Up");
     }
 
     this.canvas.canvas.onmousemove = (e)=>{

@@ -86,6 +86,15 @@ module.exports = class GameCanvas {
     }
   }
 
+  cornerRect(x,y,w,h){
+    if (this.shouldFill) {
+      this.ctx.fillRect(x, y, w, h);
+    }
+    if (this.shouldStroke) {
+      this.ctx.strokeRect(x, y, w, h);
+    }
+  }
+
   circle(x, y, r, a = 2 * Math.PI){
     if (this.shouldFill) {
       this.ctx.beginPath();

@@ -2,9 +2,7 @@ const uuid = require('uuid/v4');
 let NetworkWrapper = (Base, Tracklist) => {if ('netID' in Base.prototype) {throw new Error("NetworkWrapper: NetworkWrapper cannot be used to wrap itself or another Pre-Wrapped class.")} else {
   let made = (class extends Base {
       constructor(opts, ...rest){
-        console.log(opts, ...rest);
         if (Base.isNetWrapped){
-          console.log('Wrapped');
           super(opts, ...rest);
         } else {
           super(...rest)

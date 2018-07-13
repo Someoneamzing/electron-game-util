@@ -13,8 +13,7 @@ const fs = require('fs');
 const path = require('path');
 
 const Point = require('./classes/Point.js');
-const Rectangle = require('./classes/Rectangle.js');
-const Circle = require('./classes/Circle.js');
+const {Rectangle, Circle} = require('./classes/Shapes.js');
 const Vector = require('./classes/Vector.js');
 const QueryResult = require('./classes/QueryResult.js');
 const QuadTree = require('./classes/QuadTree.js');
