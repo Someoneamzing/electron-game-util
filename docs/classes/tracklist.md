@@ -17,8 +17,14 @@ TrackList provides a collection method for NetworkWrapped class instances. It pr
 `void` `add(NetworkWrapped obj)`  
 Registers an object to be tracked by the list. The object is then affected by the group methods on this instance.
 
+`NetworkWrapped` `get(String netID)`  
+Retrives the NetworkWrapped object from its list with the given network ID.
+
 `Array` `getAllInitPack()`  
 Retrieves the initPkt for all of the objects regitered in its list and returns them in an array.
+
+`Array` `getIds()`  
+Returns an array of all the `netID`'s of all of the objects registered in its list.
 
 `Array` `getInitPack()`  
 Retrieves the initPkt for all the objects added since the last call to this method and returns them in an array.
@@ -38,11 +44,16 @@ Calls the update method on the objects registered in its list identified by the 
 `void` `remove(Object obj)`  
 Removes the provided object from its list, and if its `side` property is equal to `ConnectionManager.SERVER` then it adds the provided object's `netID` to the removePack.
 
+`void` `run(method, ...params)`  
+Calls the specified property as a function on all of the registered objects in its list, passing the following arguments to the function call. If the method is not available the call will fail silently.
+
+`void` `setType(Class type)`  
+Marks the class that constructed all of the objects in the list. Class must be NetworkWrapped.
+
 `void` `update()`  
 Calls the same method on all of the objects registered in its list.
 
-`NetworkWrapped` `get(String netID)`  
-Retrives the NetworkWrapped object from its list with the given network ID.
+
 
 ## Examples
 ***A bare-bones TrackList use case***

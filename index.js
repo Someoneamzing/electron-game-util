@@ -2,9 +2,10 @@ let electron;
 global["$"] = require('jquery');
 try {
   electron = require('electron');
-  if (!process.versions.hasOwnProperty('electron')/*||process.versions.electron*/||process.type != 'renderer') throw new Error();
+  //if (!process.versions.hasOwnProperty('electron')/*||process.versions.electron*/||process.type != 'renderer') throw new Error();
 } catch (e) {
-  throw new Error("Game Util requires Electron. Ensure that electron is installed and is working correctly." + e.message)
+  //throw new Error("Game Util requires Electron. Ensure that electron is installed and is working correctly." + e.message)
+  ;
 }
 
 const uuid = require('uuid/v4');
@@ -13,7 +14,7 @@ const fs = require('fs');
 const path = require('path');
 
 const Point = require('./classes/Point.js');
-const {Rectangle, Circle} = require('./classes/Shapes.js');
+const {Rectangle, Circle, Line} = require('./classes/Shapes.js');
 const Vector = require('./classes/Vector.js');
 const QueryResult = require('./classes/QueryResult.js');
 const QuadTree = require('./classes/QuadTree.js');
@@ -33,4 +34,4 @@ const {clamp, sum, average, shareOne} = require('./classes/MathUtil.js');
 
 
 
-module.exports = {clamp, sum, average, shareOne, Camera, Circle, Client, CollisionGroup, ConnectionManager, ControlInterface, GameCanvas, GameLoop, Matrix, NetworkWrapper, Point, QuadTree, QueryResult, Rectangle, Server, Sprite, TrackList, Vector};
+module.exports = {clamp, sum, average, shareOne, Camera, Circle, Client, CollisionGroup, ConnectionManager, ControlInterface, GameCanvas, GameLoop, Line, Matrix, NetworkWrapper, Point, QuadTree, QueryResult, Rectangle, Server, Sprite, TrackList, Vector};

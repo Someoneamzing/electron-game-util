@@ -51,11 +51,11 @@ class QuadTree {
         node.show(gc);
       }
     } else {
-      gc.fillStyle = 'hsla(' + (240 - Math.floor(((this.level/5) * 2 + (this.children.length/this.cap))*60)) + ', 100%, 50%, 0.7)';
-      gc.fillRect(this.boundry.x - this.boundry.w/2,this.boundry.y - this.boundry.h/2, this.boundry.w, this.boundry.h);
-      // for(let point of this.children) {
-      //   point.show(gc);
-      // }
+      // gc.fillStyle = 'hsla(' + (240 - Math.floor(((this.level/5) * 2 + (this.children.length/this.cap))*60)) + ', 100%, 50%, 0.7)';
+      // gc.fillRect(this.boundry.x - this.boundry.w/2,this.boundry.y - this.boundry.h/2, this.boundry.w, this.boundry.h);
+      for(let point of this.children) {
+        point.show(gc);
+      }
     }
   }
 

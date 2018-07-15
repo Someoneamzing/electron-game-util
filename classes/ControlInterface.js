@@ -51,6 +51,8 @@ class ControlInterface {
     for(let key in this.keysPressed){
       this.keysPressed[key] = false;
     }
+    this.mouse.endCycle();
+    this.update();
   }
 
   getInitPkt(){

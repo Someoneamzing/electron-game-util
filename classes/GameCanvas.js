@@ -2,12 +2,12 @@ const Camera = require('./Camera.js')
 
 module.exports = class GameCanvas {
   constructor(opts){
-    let {full = false, width = 300, height = 300, camera = new Camera(0,0, this)} = opts;
+    let {full = false, width = 300, height = 300, camera = new Camera(0,0, this), canvas} = opts;
     this.full = full;
     this.w = width;
     this.h = height;
     this.camera = camera;
-    this.canvas = document.createElement('canvas');
+    this.canvas = canvas?canvas:document.createElement('canvas');
     this.ctx = this.canvas.getContext('2d');
     this.shouldFill = true;
     this.shouldStroke = true;
@@ -16,6 +16,27 @@ module.exports = class GameCanvas {
 
   clear(){
     this.ctx.clearRect(0, 0, this.w, this.h);
+  }
+
+  text(str, x, y){
+    if(this.shouldFill){
+      this.ctx.fillText(str, x, y);
+    }
+    if (this.shouldStroke) {
+      this.ctx.strokeText(str, x, y);
+    }
+  }
+
+  textAlign(h,v){
+    this.ctx.textAlign = h;
+    this.ctx.textBaseline = v || this.ctx.textBaseline;
+  }
+
+  line(a,b,c,d){
+    this.ctx.beginPath();
+    this.ctx.moveTo(a,b);
+    this.ctx.lineTo(c,d);
+    this.ctx.stroke();
   }
 
   begin(){

@@ -17,7 +17,7 @@ class Sprite extends Image {
   }
 
   draw(gc, x, y, w, h, a = 0, i = this.i){
-    gc.ctx.drawImage(this, i * this.frameWidth, 0, this.frameWidth, this.frameHeight, x, y, w, h);
+    gc.ctx.drawImage(this, i * this.frameWidth, 0, this.frameWidth, this.frameHeight, x - w/2, y - h/2, w, h);
   }
 
   load(){
@@ -82,8 +82,8 @@ let ctx = c.getContext('2d');
 ctx.fillStyle = 'black';
 ctx.fillRect(0,0,32,32);
 ctx.fillStyle = '#ff00ff';
-ctx.fillRect(0,0,15,15);
-ctx.fillRect(16,16,15,15);
+ctx.fillRect(0,0,16,16);
+ctx.fillRect(16,16,16,16);
 
 
 Sprite.list = {};
