@@ -60,7 +60,13 @@ class QuadTree {
   }
 
   query(range, groups = 'any', found = new QueryResult(), first = true){
-    if (!this.boundry.intersects(range)) return found;
+    if (!this.boundry.intersects(range)) {
+      if (first){
+        found.addGroup('found');
+        found.finalise();
+      }
+      return found;
+    }
     if (first) {
       found.addGroup('found');
     }

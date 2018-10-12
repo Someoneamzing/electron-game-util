@@ -9,7 +9,7 @@ class Point {
   }
 
   show(gc){
-    gc.stroke("#FCC");
+    gc.stroke("#00F");
     gc.noFill();
     gc.ctx.lineWidth = 1;
     gc.circle(this.x,this.y,2);

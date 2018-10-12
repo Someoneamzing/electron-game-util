@@ -1,4 +1,5 @@
 const Point = require('./Point.js');
+const Vector = require('./Vector.js');
 const {clamp, sum, average} = require('./MathUtil.js');
 
 class Rectangle extends Point {
@@ -65,6 +66,27 @@ class Rectangle extends Point {
     gc.ctx.lineWidth = 1;
     gc.rect(this.x, this.y, this.w, this.h);
   }
+
+  get corners() {
+    return [new Point(this.x - this.w/2, this.y-this.h/2), new Point(this.x + this.w/2, this.h - this.h/2), new Point(this.x - this.w/2, this.y + this.h/2), new Point(this.x + this.w/2, this.h + this.h/2)]
+  }
+
+  get edges(){
+    let res = [];
+    let c = this.corners;
+    res[0] = new Line(c[0], c[1]);
+    res[1] = new Line(c[1], c[2]);
+    res[2] = new Line(c[2], c[3]);
+    res[3] = new Line(c[3], c[0]);
+    return res;
+  }
+
+  static fromCorners(a,b,c,d) {
+    let center = average([new Point(a,b), new Point(c,d)]);
+    let w = Math.abs(a - c);
+    let h = Math.abs(b - d);
+    return new Rectangle(center.x, center.y, w, h);
+  }
 }
 
 class Circle extends Point {
@@ -126,16 +148,25 @@ class Line {
   }
 
   nearestOn(p){
-    let {x: e, y: f} = p;
-    let {x: c, y: a} = this.a;
-    let {x: d, y: b} = this.b;
-    let x = ((a ** 2) * d - a * (b * (c + d) - (c - d) * f) + (b ** 2) * c - b * (c - d) * f + ((c - d) ** 2) * e)/((a ** 2) - 2 * b + (b ** 2) + ((c - d) ** 2));
-    let y = ((a - b)/(c - d)) * (x - c) + a;
-    return new Point(clamp(x, Math.min(c,d), Math.max(c,d)),clamp(y, Math.min(a,b), Math.max(a,b)));
+    // let {x: e, y: f} = p;
+    // let {x: c, y: a} = this.a;
+    // let {x: d, y: b} = this.b;
+    // let x = ((a ** 2) * d - a * (b * (c + d) - (c - d) * f) + (b ** 2) * c - b * (c - d) * f + ((c - d) ** 2) * e)/((a ** 2) - 2 * b + (b ** 2) + ((c - d) ** 2));
+    // let y = ((a - b)/(c - d)) * (x - c) + a;
+    let a = new Vector(p.x - this.a.x, p.y - this.a.y);
+    let b = new Vector(this.b.x - this.a.x, this.b.y - this.a.y);
+    let norm = b.norm();
+    let {x, y} = norm.mult(a.dot(norm)).add(this.a.x, this.a.y);
+    return new Point(clamp(x, Math.min(this.a.x,this.b.x), Math.max(this.a.x,this.b.x)),clamp(y, Math.min(this.a.y,this.b.y), Math.max(this.a.y,this.b.y)));
   }
 
   show(gc){
     gc.stroke('black');
+    gc.line(this.a.x, this.a.y, this.b.x, this.b.y);
+  }
+
+  highlight(gc){
+    gc.stroke('lime');
     gc.line(this.a.x, this.a.y, this.b.x, this.b.y);
   }
 
@@ -169,7 +200,191 @@ class Line {
       return false;
     } else if (other instanceof Point) return this.contains(other);
   }
+
+  static side(line, p) {
+    return Point.orient(p, line.a, line.b);
+  }
 }
 
+Object.defineProperty(Line, 'ON', {
+  value: 2,
+  writable: false
+})
 
-module.exports = {Rectangle, Circle, Line};
+Object.defineProperty(Line, 'LEFT', {
+  value: 1,
+  writable: false
+})
+
+Object.defineProperty(Line, 'RIGHT', {
+  value: 2,
+  writable: false
+})
+
+
+
+class Polygon {
+  constructor(...edgeLoops){
+    for (let points of edgeLoops) if (points.length < 3 || !(points.every((p)=>{return p instanceof Point}))) throw new Error("Polygon: new Polygon(points, ...) expects all point arrays to be an array of Point objects containing 3 or more elements.");
+    this.verts = edgeLoops.reduce((a,points)=>a.concat(points));
+    console.log(this.verts);
+    this.edges = [];
+    this.edgeLoops = [];
+    for (let j in edgeLoops){
+      let points = edgeLoops[j];
+      for (let i = 0; i < points.length - 1; i ++){
+        this.edges.push(new Line(points[i], points[i + 1]));
+      }
+      this.edges.push(new Line(points[points.length-1], points[0]));
+      this.edgeLoops[j] = points;
+    }
+
+    let bX = {p: null, x: -Infinity};
+    let bY = {p: null, y: -Infinity};
+    let sX = {p: null, x: Infinity};
+    let sY = {p: null, y: Infinity};
+
+    for (let p of this.verts) {
+      if (p.x > bX.x) {
+        bX = {p, x: p.x};
+      }
+      if (p.x < sX.x) {
+        sX = {p, x: p.x};
+      }
+      if (p.y > bY.y) {
+        bY = {p, y: p.y};
+      }
+      if (p.y < sY.y) {
+        sY = {p, y: p.y};
+      }
+    }
+    this.extremes = {bx: bX.p, sx: sX.p, by: bY.p, sy: sY.p};
+    console.log(this.extremes);
+    let middle = average(this.verts);
+    this._x = middle.x;
+    this._y = middle.y;
+  }
+
+  set x(a){
+    let diffX = a - this._x;
+    for (let p of this.verts) {
+      p.x += diffX;
+    }
+    // for(let e of this.edges){
+    //   e.a.x += diffX;
+    //   e.b.x += diffX;
+    // }
+    this._x = a;
+  }
+
+  set y(a){
+    let diffY = a - this._y;
+    for (let p of this.verts) {
+      p.y += diffY;
+    }
+    // for(let e of this.edges){
+    //   e.a.y += diffY;
+    //   e.b.y += diffY;
+    // }
+    this._y = a;
+  }
+
+  get x() {
+    return this._x;
+  }
+
+  get y() {
+    return this._y;
+  }
+
+  area(){
+    if (this.edgeLoops.length > 1) throw new Error("Polygon: Cannot calculate area of polygon made of multiple edge loops.");
+    let total = 0;
+    for (let i = 0; i < this.verts.length; i ++){
+      total =+ (this.verts[i].x * this.verts[(i + 1) % this.verts.length].y) - (this.verts[i].y * this.verts[(i + 1) % this.verts.length].x);
+    }
+    total = Math.abs(total);
+    return total/2;
+  }
+
+  intersects(other){
+    if (other instanceof Rectangle){
+      return this.edges.some((e)=>e.itersects(other)) || this.contains(other);
+    } else if (other instanceof Circle){
+      return this.edges.some((e)=>e.itersects(other)) || this.contains(other);
+    } else if (other instanceof Point) {
+      return this.contains(other);
+    } else if (other instanceof Line) {
+      return this.edges.some((e)=>e.itersects(other)) || this.contains(other);
+    } else if (other instanceof Polygon) {
+      return this.edges.some((e)=>other.edges.some((o)=>o.intersects(e))) || this.contains(other);
+    }
+    //return (this.edges.some((e)=>{e.intersects(other)})||this.contains(other));
+  }
+
+  nearestVert(point){
+    let close = null;
+    let closeDist = Infinity;
+    for (let p of this.verts){
+      let dist = point.distance2(p);
+      if (dist < closeDist){
+        close = p;
+        closeDist = dist;
+      }
+    }
+    return close;
+  }
+
+  contains(other){
+    if (other instanceof Rectangle) {
+      return other.corners.every((p)=>{
+        return this.contains(p);
+      })
+    } else if (other instanceof Circle) {
+      let close = this.nearestVert(other).distance2(other);
+      return ((!(this.edges.some((e)=>{return other.intersects(e)}))) && other.r ** 2 < close && this.contains(new Point(other.x, other.y)))
+    } else if (other instanceof Point){
+      return ((this.edges.reduce((t, e)=>{return t + ((new Line(other, new Point(this.extremes.bx.x + 50, other.y))).intersects(e)?1:0);}, 0) % 2) == 1);
+    } else if (other instanceof Line){
+      return (this.contains(other.a) && this.contains(other.b));
+    } else if (other instanceof Polygon) {
+      return other.verts.every((p)=>{
+        return this.contains(p);
+      })
+    } else throw new Error('Polygon: contains(other) expects other to be either a point, line or polygon. Got ' + other.constructor.name)
+  }
+
+  show(gc){
+    gc.fill(0,255,0,0.3);
+    gc.stroke(0,255,0);
+    gc.ctx.beginPath()
+    for (let i in this.edgeLoops) {
+      gc.ctx.moveTo(this.edgeLoops[i][0].x, this.edgeLoops[i][0].y);
+      for (let j = 1; j < this.edgeLoops[i].length ; j ++) {
+        gc.ctx.lineTo(this.edgeLoops[i][j].x, this.edgeLoops[i][j].y);
+
+      }
+      gc.ctx.closePath();
+    }
+    gc.ctx.fill("evenodd");
+    gc.ctx.stroke();
+  }
+
+  highlight(gc){
+    gc.fill(255,255,0,0.3);
+    gc.stroke(255,255,0);
+    gc.ctx.beginPath()
+    for (let i in this.edgeLoops) {
+      gc.ctx.moveTo(this.edgeLoops[i][0].x, this.edgeLoops[i][0].y);
+      for (let j = 1; j < this.edgeLoops[i].length ; j ++) {
+        gc.ctx.lineTo(this.edgeLoops[i][j].x, this.edgeLoops[i][j].y);
+
+      }
+      gc.ctx.closePath();
+    }
+    gc.ctx.fill("evenodd");
+    gc.ctx.stroke();
+  }
+}
+
+module.exports = {Rectangle, Circle, Line, Polygon};

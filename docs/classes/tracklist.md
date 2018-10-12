@@ -8,7 +8,7 @@ TrackList provides a collection method for NetworkWrapped class instances. It pr
 
 ## Parameters
 | Parameter | Type  | Description            |
-|-----------|-------|------------------------|
+|----------:|-------|------------------------|
 | type      | Class | A reference to the Class of the to-be inserted objects. Must be 'NetworkWrapped'. _See the_ [NetworkWrapper](./networkwrapper.md) _class for more info._|
 | side      | int   | An integer representing the 'side' the list is working from, either server or client. These sides are represented with the ConnectionManager class under the 'CLIENT' and 'SERVER' properties. |
 

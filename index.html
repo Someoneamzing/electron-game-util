@@ -4,10 +4,28 @@
     <meta charset="utf-8">
     <title>Game Util Test</title>
     <link rel="stylesheet" href="util-style.css">
+    <style media="screen">
+      html, body {
+        height: 100vh;
+      }
+
+      .side {
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        background: #efefef;
+        width: 90vw;
+        height: 100vh;
+        overflow-y: scroll;
+      }
+    </style>
     <script src="index.js" charset="utf-8"></script>
   </head>
   <body>
     <canvas id="canvas" width="1000" height="1000"></canvas>
+    <div class="side">
+
+    </div>
     <script src="test.js" charset="utf-8"></script>
   </body>
 </html>

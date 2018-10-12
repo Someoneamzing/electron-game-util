@@ -8,6 +8,9 @@ module.exports = class GameCanvas {
     this.h = height;
     this.camera = camera;
     this.canvas = canvas?canvas:document.createElement('canvas');
+    if (this.full) {
+      this.canvas.style.position = 'fixed';
+    }
     this.ctx = this.canvas.getContext('2d');
     this.shouldFill = true;
     this.shouldStroke = true;
@@ -16,6 +19,10 @@ module.exports = class GameCanvas {
 
   clear(){
     this.ctx.clearRect(0, 0, this.w, this.h);
+  }
+
+  font(font){
+    this.ctx.font = font;
   }
 
   text(str, x, y){
@@ -131,11 +138,29 @@ module.exports = class GameCanvas {
 
   resize(){
     if (!this.full) return;
-    let width = window.innerWidth;
-    let height = window.innerHeight;
+    let width = document.body.clientWidth;
+    let height = document.body.clientHeight;
     this.canvas.width = width;
     this.canvas.height = height;
     this.w = width;
     this.h = height;
+  }
+
+  background(image){
+    let {x, y} = this.camera;
+    const {width: a, height: b} = image;
+    const {w, h} = this;
+    x = x - 2 * w;
+    y = y - 2 * h;
+    let C = [{n: (x - (x%a))/a, m: (y - (y%b))/b},{n: ((x+w) - ((x+w)%a))/a + 2, m: (y - (y%b))/b},{n: (x - (x%a))/a, m: ((y+h) - ((y+h)%b))/b + 2}];
+    let imax = C[1].n - C[0].n;
+    let jmax = C[2].m - C[0].m;
+    //console.log(imax, jmax);
+    for (let i = 0; i <= imax; i++){
+      for (let j = 0; j <= jmax; j++){
+        image.draw(this, (C[0].n + i) * a, (C[0].m + j) * b, a, b);
+        //image.drawCenter(this.minimap, {x: (C[0].n + i) * a, y: (C[0].m + j) * b, w: a, h: b});
+      }
+    }
   }
 }

@@ -11,6 +11,7 @@ class Mouse extends Point {
     this.lastMiddle = false;
     this.canvas = canvas;
     this.control = control;
+    this.wheelListeners = [];
     this.canvas.canvas.onmousedown = (e)=>{
       switch(e.which){
         case 1:
@@ -48,6 +49,12 @@ class Mouse extends Point {
 
     this.canvas.canvas.onmousemove = (e)=>{
       this.move(e.offsetX + this.canvas.camera.x - this.canvas.w/2, e.offsetY + this.canvas.camera.y - this.canvas.h/2);
+    }
+
+    this.canvas.canvas.onwheel = (e)=>{
+      for (let f of this.wheelListeners){
+        f(e);
+      }
     }
   }
 
@@ -87,6 +94,18 @@ class Mouse extends Point {
     pack.lastRight = this.lastRight;
     pack.lastMiddle = this.lastMiddle;
     return pack;
+  }
+
+  on(e, f){
+    if (e == 'wheel'){
+      this.wheelListeners.push(f);
+    }
+  }
+
+  off(e, f){
+    if (e == 'wheel'){
+      this.wheelListeners.splice(this.wheelListeners.indexOf(f), 1);
+    }
   }
 
 }

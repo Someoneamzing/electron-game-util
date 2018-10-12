@@ -11,6 +11,7 @@ class ControlInterface {
     this.mouse = new Mouse(0,0,this.canvas, this);
     $(window).keydown((e)=>{
       let key = e.key.toUpperCase();
+      console.log(key);
       this.keys[key] = true;
       if (key in this.listeners){
         for(let f of this.listeners[key]){

@@ -11,8 +11,8 @@ module.exports = class Client {
     this.socket.on(event, f);
   }
 
-  send(event, data){
-    this.socket.emit(event, data);
+  send(event, ...data){
+    this.socket.emit(event, ...data);
   }
 
   connect(){

@@ -14,13 +14,14 @@ const fs = require('fs');
 const path = require('path');
 
 const Point = require('./classes/Point.js');
-const {Rectangle, Circle, Line} = require('./classes/Shapes.js');
+const {Rectangle, Circle, Line, Polygon} = require('./classes/Shapes.js');
 const Vector = require('./classes/Vector.js');
 const QueryResult = require('./classes/QueryResult.js');
 const QuadTree = require('./classes/QuadTree.js');
 const Camera = require('./classes/Camera.js');
 const GameCanvas = require('./classes/GameCanvas.js');
 const Matrix = require('./classes/Matrix.js');
+const NavMesh = require('./classes/NavMesh.js');
 const NetworkWrapper = require('./classes/NetworkWrapper.js');
 const Sprite = require('./classes/Sprite.js');
 const TrackList = require('./classes/TrackList.js');
@@ -34,4 +35,4 @@ const {clamp, sum, average, shareOne} = require('./classes/MathUtil.js');
 
 
 
-module.exports = {clamp, sum, average, shareOne, Camera, Circle, Client, CollisionGroup, ConnectionManager, ControlInterface, GameCanvas, GameLoop, Line, Matrix, NetworkWrapper, Point, QuadTree, QueryResult, Rectangle, Server, Sprite, TrackList, Vector};
+module.exports = {clamp, sum, average, shareOne, Camera, Circle, Client, CollisionGroup, ConnectionManager, ControlInterface, GameCanvas, GameLoop, Line, Matrix, NavMesh, NetworkWrapper, Point, Polygon, QuadTree, QueryResult, Rectangle, Server, Sprite, TrackList, Vector};
