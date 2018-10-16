@@ -1,5 +1,8 @@
-class ConnectionManager {
+const EventEmitter = require('events');
+
+class ConnectionManager extends EventEmitter {
   constructor(side,server){
+    super();
     this.side = side;
     this.server = server;
     this.lists = {};
@@ -7,32 +10,44 @@ class ConnectionManager {
     if(this.side == ConnectionManager.SERVER){
       this.connections = {};
       this.server.on('connection', (socket)=>{
-        this.firstInit(socket);
         this.connections[socket.id] = {socket, controls: null};
+        markTime('controlinterface-init', 'once');
         socket.once('controlinterface-init', (pack)=>{
           //console.log("Connectred to new ControlInterface");
           this.connections[socket.id].controls = pack;
+          markTime('controlinterface-key-update', 'on');
           socket.on('controlinterface-key-update', (pack)=>{
             //console.log("Received update from a ControlInterface");
             this.connections[socket.id].controls = pack;
           })
         })
+        markTime('connectionmanager-connect', 'on');
+        socket.on('connectionmanager-connect', ()=>{
+          this.firstInit(socket);
+          socket.join('connectionmanager-clients');
 
+        })
+        markTime('disconnect', 'on');
         socket.on('disconnect', (e)=>{
           delete this.connections[socket.id];
         })
       });
     }
+  }
 
+  connect(){
     if (this.side == ConnectionManager.CLIENT) {
       this.server.on('connectionmanager-init', this.init.bind(this));
       this.server.on('connectionmanager-update', this.update.bind(this));
       this.server.on('connectionmanager-remove', this.remove.bind(this));
+      this.server.send('connectionmanager-connect');
+
     }
   }
 
   addTrackList(list){
     this.lists[list.type.name] = list;
+    list.on('error', (err)=>this.emit('error', err));
   }
 
   firstInit(socket){
@@ -43,6 +58,7 @@ class ConnectionManager {
       if (list.share) packet[list.type.name] = list.getAllInitPack();
     }
     //console.log(packet);
+    markTime('connectionmanager-init', 'emit');
     socket.emit('connectionmanager-init', packet);
   }
 
@@ -55,7 +71,7 @@ class ConnectionManager {
           if (list.share) packet[list.type.name] = list.getInitPack();
         }
         //console.log(packet);
-        this.server.send('connectionmanager-init', packet);
+        this.server.io.to('connectionmanager-clients').emit('connectionmanager-init', packet);
         break;
 
       case ConnectionManager.CLIENT:
@@ -77,7 +93,7 @@ class ConnectionManager {
           list.update()
           if (list.share) packet[list.type.name] = list.getUpdatePack();
         }
-        this.server.send('connectionmanager-update', packet);
+        this.server.io.to('connectionmanager-clients').emit('connectionmanager-update', packet);
         break;
 
       case ConnectionManager.CLIENT:
@@ -98,7 +114,7 @@ class ConnectionManager {
           let list = this.lists[type];
           if (list.share) packet[list.type.name] = list.getRemovePack();
         }
-        this.server.send('connectionmanager-remove', packet);
+        this.server.io.to('connectionmanager-clients').emit('connectionmanager-remove', packet);
         break;
       case ConnectionManager.CLIENT:
         //console.log("Got remove pack from server.");

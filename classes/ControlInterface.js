@@ -35,6 +35,8 @@ class ControlInterface {
       //console.log('Key Pressed');
     })
 
+    markTime('controlinterface-init', 'send');
+
     this.client.send("controlinterface-init", this.getInitPkt());
   }
 

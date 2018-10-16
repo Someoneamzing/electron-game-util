@@ -1,13 +1,16 @@
 const ConnectionManager = require("./ConnectionManager.js");
+const EventEmitter = require('events');
 
-module.exports = class TrackList {
+module.exports = class TrackList extends EventEmitter {
   constructor(side, share = true){
+    super();
     this.type = null;
     this.side = side;
     this.list = {};
     this.new = [];
     this.share = share;
     this.removePack = [];
+    this.missing = {};
   }
 
   setType(type){
@@ -23,6 +26,10 @@ module.exports = class TrackList {
 
   parseInitPack(pack){
     for(let p of pack){
+      if (this.missing[p.netID]) {
+        clearTimeout(this.missing[p.netID]);
+        console.log("Recieved init pack for object " + p.netID + ". Removing timeout.")
+      }
       let o = new this.type(p);
       //console.log(o);
     }
@@ -37,7 +44,15 @@ module.exports = class TrackList {
   parseUpdatePack(pack){
     //console.log(pack);
     for(let p of pack){
-      this.list[p.netID].update(p);
+      if (this.list[p.netID]){
+        this.list[p.netID].update(p);
+      } else {
+        console.warn("Got update for unknown object with id of " + p.netID + ". Marking for tests. If no init is recieved after 2000ms will assume packet loss has ocurred.")
+        if (!this.missing[p.netID]) this.missing[p.netID] = setTimeout(()=>{
+          delete this.missing[p.netID]
+          this.emit('error', {cause:"missing-obj-update", message:"Recieved an update packet for an unknown object without receiving an init pack within 2000ms"})
+        }, 2000);
+      }
     }
   }
 
