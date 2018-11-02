@@ -31,8 +31,9 @@ const Client = require('./classes/Client.js');
 const CollisionGroup = require('./classes/CollisionGroup.js');
 const GameLoop = require('./classes/GameLoop.js');
 const ControlInterface = require('./classes/ControlInterface.js');
+const MathSet = require('./classes/MathSet.js');
 const {clamp, sum, average, shareOne} = require('./classes/MathUtil.js');
 
 
 
-module.exports = {clamp, sum, average, shareOne, Camera, Circle, Client, CollisionGroup, ConnectionManager, ControlInterface, GameCanvas, GameLoop, Line, Matrix, NavMesh, NetworkWrapper, Point, Polygon, QuadTree, QueryResult, Rectangle, Server, Sprite, TrackList, Vector};
+module.exports = {clamp, sum, average, shareOne, Camera, Circle, Client, CollisionGroup, ConnectionManager, ControlInterface, GameCanvas, GameLoop, Line, MathSet, Matrix, NavMesh, NetworkWrapper, Point, Polygon, QuadTree, QueryResult, Rectangle, Server, Sprite, TrackList, Vector};
