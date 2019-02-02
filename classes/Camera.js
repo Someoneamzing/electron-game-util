@@ -1,7 +1,7 @@
 const Point = require('./Point.js');
 const {clamp, sum, average, shareOne} = require("./MathUtil.js");
 module.exports = class Camera extends Point {
-  constructor(x,y, canvas, follow = [new Point(0,0)]){
+  constructor(x,y, canvas, follow = new Point(0,0)){
     super(x,y);
     this.gc = canvas;
     this.follow = follow;
@@ -19,7 +19,7 @@ module.exports = class Camera extends Point {
       this.x = x;
       this.y = y;
     } else {
-      let pos = average(this.follow);
+      let pos = this.follow instanceof Point ? this.follow : average(this.follow);
       this.x = pos.x;
       this.y = pos.y;
     }

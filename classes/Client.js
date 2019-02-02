@@ -1,9 +1,11 @@
 const io = require('socket.io-client');
+const ConnectionManager = require('./ConnectionManager.js');
 
 module.exports = class Client {
   constructor(ip, port){
     this.ip = ip;
     this.port = port;
+    this.side = ConnectionManager.CLIENT;
     this.socket = io(ip + ":" + port, {autoConnect: false});
   }
 

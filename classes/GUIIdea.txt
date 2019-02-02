@@ -1,0 +1,27 @@
+[SERVER] Server init
+[SERVER] GUI Registration
+[SERVER] Element Registration
+....
+[CLIENT] Client Init;
+[SERVER] Element communication
+[CLIENT] Element DOM creation
+....
+[CLIENT] User interaction
+[SERVER] Set GUI Object track
+[SERVER] Open GUI for client
+[CLIENT] Establish event channel
+[CLIENT] Show GUI
+....
+[CLIENT] DOM Interaction
+[CLIENT] Event communication
+[SERVER] Event handling
+....
+[SERVER] Object Update
+[SERVER] Communicate Change to client
+[CLIENT] Update value for element;
+....
+[SERVER] Close GUI
+[SERVER] Communicate change
+[CLIENT] Hide GUI
+[SERVER] Disconnect event channel
+[SERVER] Stop GUI value tracking

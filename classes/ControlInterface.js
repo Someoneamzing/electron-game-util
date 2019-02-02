@@ -7,11 +7,14 @@ class ControlInterface {
     this.client = client;
     this.keys = {};
     this.keysPressed = {};
+    this.keysReleased = {};
     this.listeners = {};
     this.mouse = new Mouse(0,0,this.canvas, this);
-    $(window).keydown((e)=>{
+    window.addEventListener('keydown', (e)=>{
       let key = e.key.toUpperCase();
-      console.log(key);
+      // console.log(key);
+      if (!this.keys[key]) this.keysPressed[key] = true;
+
       this.keys[key] = true;
       if (key in this.listeners){
         for(let f of this.listeners[key]){
@@ -21,23 +24,26 @@ class ControlInterface {
       //console.log('Key Down');
     })
 
-    $(window).keyup((e)=>{
+    window.addEventListener('keyup', (e)=>{
       let key = e.key.toUpperCase();
+      if (this.keys[key]) this.keysReleased[key] = true;
       this.keys[key] = false;
-      this.client.send("controlinterface-key-update", this.getUpdatePkt());
+      if (this.client) this.client.send("controlinterface-key-update", this.getUpdatePkt());
       //console.log('Key Up');
     })
 
-    $(window).keypress((e)=>{
+    window.addEventListener('keypress', (e)=>{
       let key = e.key.toUpperCase();
-      this.keysPressed[key] = true;
-      this.client.send("controlinterface-key-update", this.getUpdatePkt());
+      if (this.client) this.client.send("controlinterface-key-update", this.getUpdatePkt());
       //console.log('Key Pressed');
     })
 
-    markTime('controlinterface-init', 'send');
 
-    this.client.send("controlinterface-init", this.getInitPkt());
+
+    if (this.client) {
+      markTime('controlinterface-init', 'send');
+      this.client.send("controlinterface-init", this.getInitPkt());
+    }
   }
 
   on(key, f){
@@ -53,6 +59,10 @@ class ControlInterface {
   endCycle(){
     for(let key in this.keysPressed){
       this.keysPressed[key] = false;
+    }
+
+    for (let key in this.keysReleased) {
+      this.keysReleased[key] = false;
     }
     this.mouse.endCycle();
     this.update();
@@ -75,7 +85,19 @@ class ControlInterface {
   }
 
   update(){
-    this.client.send("controlinterface-key-update", this.getUpdatePkt());
+    if (this.client) this.client.send("controlinterface-key-update", this.getUpdatePkt());
+  }
+
+  key(key){
+    return this.keys[key] || false;
+  }
+
+  keyDown(key) {
+    return this.keysPressed[key] || false;
+  }
+
+  keyUp(key) {
+    return this.keysReleased[key] || false;
   }
 }
 

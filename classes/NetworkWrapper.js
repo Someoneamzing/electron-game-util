@@ -1,49 +1,44 @@
+const GameObject = require('./GameObject.js');
 const uuid = require('uuid/v4');
-let NetworkWrapper = (Base, Tracklist) => {if ('netID' in Base.prototype) {throw new Error("NetworkWrapper: NetworkWrapper cannot be used to wrap itself or another Pre-Wrapped class.")} else {
-  let made = (class extends Base {
-      constructor(opts, ...rest){
-        if (Base.isNetWrapped){
-          super(opts, ...rest);
-        } else {
-          super(...rest)
-        }
+let NetworkWrapper = (Base, tracklist) => {
+  console.log(tracklist);
+  let made = (class extends GameObject(Base, tracklist) {
+    constructor(opts, ...rest){
 
-        if (!this.netID) this.netID = (opts && typeof opts.netID !== 'undefined')? opts.netID : uuid();
+      super(opts, ...rest);
 
 
-        Tracklist.add(this);
-      }
+    }
+    //
+    // remove(){
+    //   if ('remove' in Base.prototype) {super.remove()};
+    //
+    //   Tracklist.remove(this);
+    // }
 
-      remove(){
-        if ('remove' in Base.prototype) {super.remove()};
+    getInitPkt(){
+      let pack = {};
+      if ('getInitPkt' in Base.prototype) {pack = super.getInitPkt()};
+      pack.netID = this.netID;
+      return pack;
+    }
 
-        Tracklist.remove(this);
-      }
-
-      getInitPkt(){
-        let pack = {};
-        if ('getInitPkt' in Base.prototype) {pack = super.getInitPkt()};
-        pack.netID = this.netID;
-        return pack;
-      }
-
-      getUpdatePkt(){
-        let pack = {};
-        if ('getUpdatePkt' in Base.prototype) {pack = super.getUpdatePkt()};
-        pack.netID = this.netID;
-        return pack;
-      }
-
-      update(...params){
-        if ('update' in Base.prototype) {super.update(...params)};
-      }
-    })
+    getUpdatePkt(){
+      let pack = {};
+      if ('getUpdatePkt' in Base.prototype) {pack = super.getUpdatePkt()};
+      pack.netID = this.netID;
+      return pack;
+    }
+    //
+    // update(...params){
+    //   if ('update' in Base.prototype) {super.update(...params)};
+    // }
+  })
 
 
-    made.isNetWrapped = true;
+  made.isNetWrapped = true;
 
-    return made;
-  }
+  return made;
 }
 
 module.exports = NetworkWrapper;

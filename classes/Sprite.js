@@ -1,6 +1,10 @@
+
+
 const FILE_EXT_REG = (/(?:.+[\/\\])?[^\s\\\/]+\.([A-z]+)$/);
 const VALID_SPRITE_EXT = ['png','jpg','jpeg','gif'];
-
+/**
+ * @module electron-game-util
+ */
 class Sprite extends Image {
   constructor(name,src,width,height,frameWidth,frameHeight,animate){
     super(width, height)
@@ -16,7 +20,7 @@ class Sprite extends Image {
     Sprite.total ++;
   }
 
-  draw(gc, x, y, w, h, a = 0, i = this.i){
+  draw(gc, x, y, w = this.frameWidth, h = this.frameHeight, a = 0, i = this.i){
     gc.ctx.drawImage(this, i * this.frameWidth, 0, this.frameWidth, this.frameHeight, x - w/2, y - h/2, w, h);
   }
 

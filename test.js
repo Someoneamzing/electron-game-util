@@ -8,6 +8,16 @@ console.log(query);
 let line = new Line(-250, -200, -300, -300);//new Rectangle(Math.floor(Math.random() * 900) - 450,Math.floor(Math.random() * 900) - 450, 32, 32);
 //let poly = new Polygon([new Point(-100,-100),new Point(100,-100),new Point(100,100),new Point(-100,100), new Point(-150, 0)],[new Point(-20,-20),new Point(20,-20),new Point(20,20),new Point(-20,20), new Point(-30, 0)], [new Point(-50, -50), new Point(0, -50), new Point(-50, 0)]);
 
+let Timer = new OutTimer("test");
+
+
+console.time("Delay")
+console.time("Nameless")
+let delay = Timer.newTimer("delay", 1000, console.timeEnd, "Delay");
+let nameless = Timer.newTimer(1000, console.timeEnd, "Nameless");
+Timer.delayTimer(delay, 1000);
+
+
 let tp = 20;//Math.random() * 20
 let circ = new Point(0,0);
 let pols = [];

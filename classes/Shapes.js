@@ -3,7 +3,16 @@ const Vector = require('./Vector.js');
 const {clamp, sum, average} = require('./MathUtil.js');
 
 class Rectangle extends Point {
-  constructor(x,y,w,h) {
+  constructor(a,b,c,d) {
+    let x, y, w, h;
+    if (a instanceof Rectangle) {
+      x = a.x;
+      y = a.y;
+      w = a.w;
+      h = a.h;
+    } else {
+      x = a; y = b; w = c; h = d;
+    }
     super(x,y);
     this.w = w;
     this.h = h;
@@ -81,6 +90,26 @@ class Rectangle extends Point {
     return res;
   }
 
+  setCorners(a, b, c, d) {
+    if (a instanceof Point) {
+      let center = average([a, b]);
+      let w = Math.abs(a.x - b.x);
+      let h = Math.abs(a.y - b.y);
+      this.x = center.x;
+      this.y = center.y;
+      this.w = w;
+      this.h = h;
+    } else {
+      let center = average([new Point(a,b), new Point(c,d)]);
+      let w = Math.abs(a - c);
+      let h = Math.abs(b - d);
+      this.x = center.x;
+      this.y = center.y;
+      this.w = w;
+      this.h = h;
+    }
+  }
+
   static fromCorners(a,b,c,d) {
     let center = average([new Point(a,b), new Point(c,d)]);
     let w = Math.abs(a - c);
@@ -90,7 +119,15 @@ class Rectangle extends Point {
 }
 
 class Circle extends Point {
-  constructor(x,y,r){
+  constructor(a, b, c){
+    let x, y, r;
+    if (a instanceof Circle) {
+      x = a.x; y = a.y; r = a.r;
+    } else {
+      x = a;
+      y = b;
+      r = c;
+    }
     super(x,y);
     this.r = r;
   }
@@ -138,7 +175,10 @@ class Circle extends Point {
 
 class Line {
   constructor(a, b, c, d){
-    if (a instanceof Point){
+    if (a instanceof Line) {
+      this.a = a.a;
+      this.b = a.b;
+    } else if (a instanceof Point){
       this.a = a;
       this.b = b;
     } else {
@@ -225,6 +265,7 @@ Object.defineProperty(Line, 'RIGHT', {
 
 class Polygon {
   constructor(...edgeLoops){
+    if (edgeLoops[0] instanceof Polygon) edgeLoops = edgeLoops[0].edgeLoops;
     for (let points of edgeLoops) if (points.length < 3 || !(points.every((p)=>{return p instanceof Point}))) throw new Error("Polygon: new Polygon(points, ...) expects all point arrays to be an array of Point objects containing 3 or more elements.");
     this.verts = edgeLoops.reduce((a,points)=>a.concat(points));
     console.log(this.verts);

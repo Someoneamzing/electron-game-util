@@ -1,4 +1,6 @@
-const Camera = require('./Camera.js')
+const Camera = require('./Camera.js');
+const Point = require('./Point.js');
+const {RectangleClickRegion} = require('./ClickHandlers.js');
 
 module.exports = class GameCanvas {
   constructor(opts){
@@ -11,6 +13,7 @@ module.exports = class GameCanvas {
     if (this.full) {
       this.canvas.style.position = 'fixed';
     }
+    this.zoom = 1;
     this.ctx = this.canvas.getContext('2d');
     this.shouldFill = true;
     this.shouldStroke = true;
@@ -19,10 +22,20 @@ module.exports = class GameCanvas {
 
   clear(){
     this.ctx.clearRect(0, 0, this.w, this.h);
+    this.ctx.clearHitRegions();
+
   }
 
   font(font){
     this.ctx.font = font;
+  }
+
+  filter(filter){
+    this.ctx.filter = filter;
+  }
+
+  noFilter(){
+    this.ctx.filter = "none";
   }
 
   text(str, x, y){
@@ -39,6 +52,10 @@ module.exports = class GameCanvas {
     this.ctx.textBaseline = v || this.ctx.textBaseline;
   }
 
+  strokeWeight(a) {
+    this.ctx.lineWidth = a;
+  }
+
   line(a,b,c,d){
     this.ctx.beginPath();
     this.ctx.moveTo(a,b);
@@ -46,11 +63,31 @@ module.exports = class GameCanvas {
     this.ctx.stroke();
   }
 
+  curve(a,b,c,d,e,f,g,h){
+    this.ctx.beginPath();
+    this.ctx.moveTo(a, b);
+    this.ctx.bezierCurveTo(c,d,e,f,g,h);
+    this.ctx.stroke();
+  }
+
   begin(){
     this.camera.move();
     this.ctx.save();
     this.clear();
-    this.ctx.translate(-this.camera.x + this.w/2, -this.camera.y + this.h/2);
+    this.ctx.translate(this.w/2, this.h/2)
+    this.ctx.scale(this.zoom, this.zoom);
+    this.ctx.translate(-this.camera.x, -this.camera.y);
+
+    RectangleClickRegion.list.run('registerRegion', this);
+
+  }
+
+  getTransformedCoords(x, y) {
+    return new Point( ( x - this.w / 2) / this.zoom + this.camera.x,  ( y - this.h/2 ) / this.zoom + this.camera.y);
+  }
+
+  getScreenCoords(x, y) {
+    return new Point( ( x + this.w / 2) * this.zoom - this.camera.x,  ( y + this.h/2) * this.zoom - this.camera.y);
   }
 
   end(){

@@ -34,6 +34,7 @@ function average(list){
 }
 
 function shareOne(a,b){
+  if (!Array.isArray(a)) a = [a];
   return a.some(c => b.includes(c));
 }
 

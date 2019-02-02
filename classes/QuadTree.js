@@ -16,7 +16,10 @@ class QuadTree {
   }
 
   insert(point){
-    if (!this.boundry.contains(point)) return "Not in boundry";
+    if (!this.boundry.intersects(point)) {
+      // console.warn("Attempted to add object outside of QuadTree bounds");
+      return "Not in boundry";
+    }
     if (this.nodes.length > 0) {
       for(let i in this.nodes){
         this.nodes[i].insert(point);
@@ -43,16 +46,16 @@ class QuadTree {
   }
 
   show(gc) {
-    // gc.strokeStyle = "#000";
-    // gc.lineWidth = 1;
-    // gc.strokeRect(this.boundry.x - this.boundry.w/2,this.boundry.y - this.boundry.h/2, this.boundry.w, this.boundry.h);
+    gc.ctx.strokeStyle = "#000";
+    gc.ctx.lineWidth = 1;
+    gc.ctx.strokeRect(this.boundry.x - this.boundry.w/2,this.boundry.y - this.boundry.h/2, this.boundry.w, this.boundry.h);
     if (this.nodes.length > 0) {
       for (let node of this.nodes){
         node.show(gc);
       }
     } else {
-      // gc.fillStyle = 'hsla(' + (240 - Math.floor(((this.level/5) * 2 + (this.children.length/this.cap))*60)) + ', 100%, 50%, 0.7)';
-      // gc.fillRect(this.boundry.x - this.boundry.w/2,this.boundry.y - this.boundry.h/2, this.boundry.w, this.boundry.h);
+      gc.ctx.fillStyle = 'hsla(' + (240 - Math.floor(((this.level/5) * 2 + (this.children.length/this.cap))*60)) + ', 100%, 50%, 0.7)';
+      gc.ctx.fillRect(this.boundry.x - this.boundry.w/2,this.boundry.y - this.boundry.h/2, this.boundry.w, this.boundry.h);
       for(let point of this.children) {
         point.show(gc);
       }
