@@ -1,3 +1,6 @@
+GUI Instances
+ Instantiation of both from same code file.
+
 [SERVER] Server init
 [SERVER] GUI Registration
 [SERVER] Element Registration

@@ -8,6 +8,10 @@ class Point {
     return (this.x - other.x) ** 2 + (this.y - other.y) ** 2;
   }
 
+  intersects(other){
+    return other.contains(this);
+  }
+
   show(gc){
     gc.stroke("#00F");
     gc.noFill();

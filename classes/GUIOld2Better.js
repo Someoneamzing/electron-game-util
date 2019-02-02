@@ -10,12 +10,17 @@ class GUI extends GameObject(Object, list) {
     super();
     this.name = name;
     this.server = server;
-    this.io = this.server.io.of('gui-' + name);
-    // this.io.on('connection')
-    this.connnectedClients = [];
+    if (SIDE = ConnectionManager.SERVER) {
+      this.io = this.server.io.of('gui-' + name);
+      // this.io.on('connection')
+      this.connnectedClients = [];
+    }
+    this.elements = [];
+
+
   }
 
-  static initElements(){
+  registerElements(){
 
   }
 }
