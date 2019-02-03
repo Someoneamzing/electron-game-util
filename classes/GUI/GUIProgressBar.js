@@ -5,17 +5,15 @@ class GUIProgressBar extends GUIElement {
   constructor(opts){
     super(opts);
     let {max, progress} = opts;
-    this.propNames = [max, progress];
-    this.max = max;
-    this.progress = progress;
+    this.properties = {max, progress};
   }
 
   propUpdate(prop, oldVal, newVal) {
     switch (prop) {
-      case this.max:
+      case "max":
         this.shadowRoot.getElementById('bar').max = newVal;
         break;
-      case this.progress:
+      case "progress":
         this.shadowRoot.getElementById('bar').value = newVal;
         break;
     }

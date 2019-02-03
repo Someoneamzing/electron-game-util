@@ -9,7 +9,7 @@ class GUIElement extends HTMLElement {
     this.attachShadow({mode: 'open'});
     let template = document.getElementById('gui-element-' + this.constructor.elementName);
     if (template) this.shadowRoot.appendChild(template.content.cloneNode(true));
-    this.propNames = [prop];
+    this.properties = {prop};
     this.gui = null;
 
   }
@@ -24,7 +24,9 @@ class GUIElement extends HTMLElement {
 
   setGUI(gui) {
     this.gui = gui;
-    this.gui.server.on('gui-prop-change-' + this.name, this.propUpdate.bind(this))
+    this.gui.server.on('gui-prop-change-' + this.name, (prop, oldVal, newVal)=>{
+      this.propUpdate(prop, oldVal, this.properties[prop].value(oldVal, newVal))
+    })
   }
 
   serverPropUpdate(prop, oldVal, newVal) {
@@ -65,5 +67,19 @@ class GUIElement extends HTMLElement {
 GUIElement.elementTypes = {};
 
 GUIElement.define('gui-element', GUIElement);
+
+GUIElement.Property = class {
+  constructor(opts){
+    let {value, property, handler = (oldVal, newVal)=>{return newVal}} = opts;
+    this.type = value == undefined ? "prop" : "constant";
+    this.constant = value;
+    this.property = property;
+    this.handler = handler.bind(this);
+  }
+
+  value(oldVal, newVal){
+    return this.type == 'constant' ? this.constant : this.handler(oldVal, newVal);
+  }
+}
 
 module.exports = GUIElement;

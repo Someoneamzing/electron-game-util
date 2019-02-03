@@ -24,6 +24,8 @@ class GUI extends EventEmitter {
       // document.body.append(this.element);
     }
 
+    this.close = this.close.bind(this);
+
     GUI.list[name] = this;
   }
 
@@ -40,8 +42,12 @@ class GUI extends EventEmitter {
   getInitialData(object) {
     return Object.keys(this.elements).map(name=>{
       let element = this.elements[name];
-      return [name, element.propNames.reduce((out, prop)=>{out[prop] = object[prop];return out;}, {})];
+      return [name, Object.keys(element.properties).reduce((out, prop)=>{out[prop] = element.properties[prop].value(undefined, object[element.properties[prop].property]);return out;}, {})];
     })
+  }
+
+  getDisconnectSocket(){
+
   }
 
   open(socket, object) {
@@ -53,22 +59,29 @@ class GUI extends EventEmitter {
         for (let name in this.elements) {
           let element = this.elements[name];
           // console.log(object, object[element.propNames]);
-          for (let propName of element.propNames) {
-            object.watch(propName, (prop, oldVal, newVal)=>{
-              console.log("Object property changed");
-              for (let socket of this.watchedObjects[object.netID].sockets) {
-                socket.emit('gui-prop-change-' + element.name, prop, oldVal, newVal);
-              }
-            })
+          for (let propertyName in element.properties) {
+            let property = element.properties[propertyName];
+            if (property.type != 'constant') {
+              object.watch(property.property, (prop, oldVal, newVal)=>{
+                console.log("Object property changed");
+                for (let socket of this.watchedObjects[object.netID].sockets) {
+                  socket.emit('gui-prop-change-' + element.name, propertyName, oldVal, newVal);
+                }
+              })
+            }
           }
         }
       } else {
         this.watchedObjects[object.netID].sockets.push(socket);
       }
+      this.accessingSockets[socket.id]._guiDisconnectHandlers?"":this.accessingSockets[socket.id]._guiDisconnectHandlers = {};
+      this.accessingSockets[socket.id]._guiDisconnectHandlers[this.name] = ()=>{this.close(socket)};
+      socket.on('disconnect', this.accessingSockets[socket.id]._guiDisconnectHandlers[this.name]);
     } else {
       this.element.removeAttribute('hidden');
       for (let data of socket.initialData) {
         for (let prop in data[1]){
+          console.log(prop);
           this.elements[data[0]].setValue(prop, data[1][prop]);
         }
       }
@@ -76,18 +89,23 @@ class GUI extends EventEmitter {
   }
 
   close(socket) {
+    console.log(socket);
     if (this.server.side == ConnectionManager.SERVER) {
       if (!this.accessingSockets[socket.id]) return;
+      console.log("Closing GUI " + this.name + " for socket " + socket.id);
       let object = this.accessingSockets[socket.id].object;
       this.watchedObjects[object.netID].sockets.splice(this.watchedObjects[object.netID].sockets.indexOf(socket), 1);
       if (this.watchedObjects[object.netID].sockets.length == 0) {
         for (let name in this.elements) {
           let element = this.elements[name];
-          for (let propName of element.propNames) object.unwatch(propName);
+          for (let propertyName in element.properties) object.unwatch(element.properties[propertyName].property);
         }
         delete this.watchedObjects[object.netID];
       }
       socket.emit('gui-close-' + this.name);
+      socket.off('disconnect', this.accessingSockets[socket.id]._guiDisconnectHandlers[this.name]);
+      delete this.accessingSockets[socket.id]._guiDisconnectHandlers[this.name];
+      delete this.accessingSockets[socket.id];
     } else {
       this.element.setAttribute('hidden', '');
     }
@@ -95,7 +113,10 @@ class GUI extends EventEmitter {
 
   closeOnObject(object){
     let sockets = this.watchedObjects[object.netID].sockets;
-    for (let socket of sockets) {
+    console.log(sockets);
+    for (let i = sockets.length - 1; i >= 0; i--) {
+      let socket = sockets[i];
+      console.log("Closing socket " + socket.id);
       this.close(socket);
     }
   }
