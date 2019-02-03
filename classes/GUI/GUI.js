@@ -18,6 +18,10 @@ class GUI extends EventEmitter {
     } else {
       this.server.socket.on('gui-open-' + this.name, this.open.bind(this));
       this.server.socket.on('gui-close-' + this.name, this.close.bind(this));
+      // this.server.socket.on('gui-event-attach' + this.name, (data)=>{
+      //   if (!this.elements[data.name].listeningEvents.includes(data.type)) this.elements[data.name].on(data.type);
+      // });
+
       this.element = document.createElement('gui-container');
       this.element.style.width = this.w + "px";
       this.element.style.height = this.h + "px";
@@ -25,6 +29,7 @@ class GUI extends EventEmitter {
     }
 
     this.close = this.close.bind(this);
+    this.handleDOMEvent = this.handleDOMEvent.bind(this);
 
     GUI.list[name] = this;
   }
@@ -46,8 +51,10 @@ class GUI extends EventEmitter {
     })
   }
 
-  getDisconnectSocket(){
-
+  handleDOMEvent(data){
+    for (let handler of this.elements[data.name].eventHandlers[data.type]) {
+      handler.call(this.elements[data.name], this.accessingSockets[data.socket].object)
+    }
   }
 
   open(socket, object) {
@@ -74,6 +81,7 @@ class GUI extends EventEmitter {
       } else {
         this.watchedObjects[object.netID].sockets.push(socket);
       }
+      socket.on('gui-event-emit-' + this.name, this.handleDOMEvent);
       this.accessingSockets[socket.id]._guiDisconnectHandlers?"":this.accessingSockets[socket.id]._guiDisconnectHandlers = {};
       this.accessingSockets[socket.id]._guiDisconnectHandlers[this.name] = ()=>{this.close(socket)};
       socket.on('disconnect', this.accessingSockets[socket.id]._guiDisconnectHandlers[this.name]);
@@ -98,11 +106,12 @@ class GUI extends EventEmitter {
       if (this.watchedObjects[object.netID].sockets.length == 0) {
         for (let name in this.elements) {
           let element = this.elements[name];
-          for (let propertyName in element.properties) object.unwatch(element.properties[propertyName].property);
+          for (let propertyName in element.properties) if (element.properties[propertyName].type != 'constant') object.unwatch(element.properties[propertyName].property);
         }
         delete this.watchedObjects[object.netID];
       }
       socket.emit('gui-close-' + this.name);
+      socket.off('gui-event-emit-' + this.name, this.handleDOMEvent);
       socket.off('disconnect', this.accessingSockets[socket.id]._guiDisconnectHandlers[this.name]);
       delete this.accessingSockets[socket.id]._guiDisconnectHandlers[this.name];
       delete this.accessingSockets[socket.id];

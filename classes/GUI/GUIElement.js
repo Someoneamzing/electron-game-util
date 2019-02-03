@@ -1,3 +1,5 @@
+const ConnectionManager = require('../ConnectionManager.js');
+
 class GUIElement extends HTMLElement {
   constructor({name, prop, w = 50, h = 20, x = 0, y = 0}){
     super();
@@ -12,6 +14,24 @@ class GUIElement extends HTMLElement {
     this.properties = {prop};
     this.gui = null;
 
+    this.listeningEvents = [];
+    this.eventHandlers = {};
+
+  }
+
+  on(type, handler){
+    if (this.gui.server.side == ConnectionManager.SERVER) {
+      // console.log('gui-event-attach');
+      // this.gui.server.send('gui-event-attach-' + this.gui.name, {name: this.name, type});
+      this.eventHandlers[type]?"":this.eventHandlers[type] = [];
+      this.eventHandlers[type].push(handler);
+    } else {
+      this.listeningEvents.push(type)
+      this.addEventListener(type, (e)=>{
+        console.log('gui-event-emit');
+        this.gui.server.send('gui-event-emit-' + this.gui.name, {name: this.name, type, socket: this.gui.server.socket.id});
+      })
+    }
   }
 
   connectedCallback(){
