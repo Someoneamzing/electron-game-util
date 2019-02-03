@@ -2,10 +2,6 @@ const GUIElement = require("./GUIElement.js");
 
 class GUITextBox extends GUIElement {
 
-  connectedCallback(){
-
-  }
-
   propUpdate(prop, oldVal, newVal) {
     this.shadowRoot.getElementById('text').innerText = newVal;
   }

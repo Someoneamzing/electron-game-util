@@ -113,8 +113,9 @@ const MathSet = require('./classes/MathSet.js');
 const GUI = require('./classes/GUI/GUI.js');
 const GUIElement = require('./classes/GUI/GUIElement.js');
 const GUITextBox = require('./classes/GUI/GUITextBox.js');
+const GUIProgressBar = require('./classes/GUI/GUIProgressBar.js');
 const {clamp, sum, average, shareOne} = require('./classes/MathUtil.js');
 
 
 
-module.exports = {clamp, sum, average, shareOne, Camera, Circle, Client, ClientManager, ClientTrackList, CollisionGroup, ConnectionManager, ControlInterface, GameCanvas, GameObject, GameLoop, GUI, GUIElement, GUITextBox, Line, MathSet, Matrix, NavMesh, NetworkWrapper, Point, Polygon, QuadTree, QueryResult, Rectangle, RectangleClickRegion, Server, Sprite, Timer: OutTimer,  TrackList, Vector};
+module.exports = {clamp, sum, average, shareOne, Camera, Circle, Client, ClientManager, ClientTrackList, CollisionGroup, ConnectionManager, ControlInterface, GameCanvas, GameObject, GameLoop, GUI, GUIElement, GUITextBox, GUIProgressBar, Line, MathSet, Matrix, NavMesh, NetworkWrapper, Point, Polygon, QuadTree, QueryResult, Rectangle, RectangleClickRegion, Server, Sprite, Timer: OutTimer,  TrackList, Vector};

@@ -3,9 +3,11 @@ const EventEmitter = require('events');
 const GUIElement = require('./GUIElement.js');
 
 class GUI extends EventEmitter {
-  constructor(name, server) {
+  constructor(name, w, h, server) {
     super();
     this.name = name;
+    this.w = w;
+    this.h = h;
     this.server = server;
     this.elements = {};
     this.element = null;
@@ -17,7 +19,9 @@ class GUI extends EventEmitter {
       this.server.socket.on('gui-open-' + this.name, this.open.bind(this));
       this.server.socket.on('gui-close-' + this.name, this.close.bind(this));
       this.element = document.createElement('gui-container');
-      document.body.append(this.element);
+      this.element.style.width = this.w + "px";
+      this.element.style.height = this.h + "px";
+      // document.body.append(this.element);
     }
 
     GUI.list[name] = this;
@@ -36,7 +40,7 @@ class GUI extends EventEmitter {
   getInitialData(object) {
     return Object.keys(this.elements).map(name=>{
       let element = this.elements[name];
-      return [name, object[element.propName]];
+      return [name, element.propNames.reduce((out, prop)=>{out[prop] = object[prop];return out;}, {})];
     })
   }
 
@@ -48,13 +52,15 @@ class GUI extends EventEmitter {
         this.watchedObjects[object.netID] = {sockets: [socket], object};
         for (let name in this.elements) {
           let element = this.elements[name];
-          console.log(object, object[element.propName]);
-          object.watch(element.propName, (prop, oldVal, newVal)=>{
-            console.log("Object property changed");
-            for (let socket of this.watchedObjects[object.netID].sockets) {
-              socket.emit('gui-prop-change-' + element.name, prop, oldVal, newVal);
-            }
-          })
+          // console.log(object, object[element.propNames]);
+          for (let propName of element.propNames) {
+            object.watch(propName, (prop, oldVal, newVal)=>{
+              console.log("Object property changed");
+              for (let socket of this.watchedObjects[object.netID].sockets) {
+                socket.emit('gui-prop-change-' + element.name, prop, oldVal, newVal);
+              }
+            })
+          }
         }
       } else {
         this.watchedObjects[object.netID].sockets.push(socket);
@@ -62,7 +68,9 @@ class GUI extends EventEmitter {
     } else {
       this.element.removeAttribute('hidden');
       for (let data of socket.initialData) {
-        this.elements[data[0]].setValue(data[1]);
+        for (let prop in data[1]){
+          this.elements[data[0]].setValue(prop, data[1][prop]);
+        }
       }
     }
   }
@@ -75,7 +83,7 @@ class GUI extends EventEmitter {
       if (this.watchedObjects[object.netID].sockets.length == 0) {
         for (let name in this.elements) {
           let element = this.elements[name];
-          object.unwatch(element.propName);
+          for (let propName of element.propNames) object.unwatch(propName);
         }
         delete this.watchedObjects[object.netID];
       }
@@ -113,7 +121,17 @@ GUI.list = {};
 class ClientGUIContainer extends HTMLElement {
   constructor(){
     super();
-    this.attachShadow({mode: 'open'})
+    this.attachShadow({mode: 'open'});
+
+  }
+
+  connectedCallback(){
+    this.style.position = "fixed";
+    this.style.left = "50%";
+    this.style.top = "50%";
+    this.style.transform = "translate(-50%, -50%)";
+    this.style.zIndex = "6";
+    this.style.background = "whitesmoke";
   }
 }
 
