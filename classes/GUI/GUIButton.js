@@ -11,7 +11,7 @@ class GUIButton extends GUIElement {
 
   setGUI(gui){
     super.setGUI(gui);
-    this.on('click', (object)=>{
+    if (this.properties.click) this.on('click', (object)=>{
       (this.properties.click.type == 'constant'?this.properties.click.constant:object[this.properties.click.property]).call(object)
     })
   }
