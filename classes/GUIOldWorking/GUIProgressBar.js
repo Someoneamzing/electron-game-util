@@ -4,8 +4,8 @@ class GUIProgressBar extends GUIElement {
 
   constructor(opts){
     super(opts);
-    let {max, progress} = opts;
-    this.properties = {max, progress};
+    let {max = null, progress = null} = opts;
+    this.getters = {max, progress};
   }
 
   propUpdate(prop, oldVal, newVal) {

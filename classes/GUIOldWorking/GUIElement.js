@@ -11,7 +11,8 @@ class GUIElement extends HTMLElement {
     this.attachShadow({mode: 'open'});
     let template = document.getElementById('gui-element-' + this.constructor.elementName);
     if (template) this.shadowRoot.appendChild(template.content.cloneNode(true));
-    this.properties = {prop};
+    this.getters = {prop};
+    this.setters = {};
     this.gui = null;
 
     this.listeningEvents = [];
@@ -44,9 +45,11 @@ class GUIElement extends HTMLElement {
 
   setGUI(gui) {
     this.gui = gui;
-    this.gui.server.on('gui-prop-change-' + this.name, (prop, oldVal, newVal)=>{
-      this.propUpdate(prop, oldVal, this.properties[prop].value(oldVal, newVal))
-    })
+    if (this.gui.server.side == ConnectionManager.CLIENT) {
+      this.gui.server.on('gui-prop-change-' + this.name, (prop, oldVal, newVal)=>{
+        this.propUpdate(prop, oldVal, newVal)
+      })
+    }
   }
 
   serverPropUpdate(prop, oldVal, newVal) {
@@ -97,8 +100,12 @@ GUIElement.Property = class {
     this.handler = handler.bind(this);
   }
 
-  value(oldVal, newVal){
-    return this.type == 'constant' ? this.constant : this.handler(oldVal, newVal);
+  value(object){
+    return this.type == 'constant' ? this.constant : this.handler(object);
+  }
+
+  setValue(gui, val){
+    gui.server.send('gui-prop-change-' + gui.name, {prop: this.property, value: val})
   }
 }
 

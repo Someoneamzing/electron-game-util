@@ -91,9 +91,13 @@ class ConnectionManager extends EventEmitter {
         for(let type in this.lists){
           let list = this.lists[type]
           list.update()
-          if (list.share) packet[list.type.name] = list.getUpdatePack();
+          if (list.share) {
+            let pack = list.getUpdatePack();
+            if (pack.length > 0) packet[list.type.name] = pack;
+          }
         }
-        this.server.io.to('connectionmanager-clients').emit('connectionmanager-update', packet);
+        if (Object.keys(packet).reduce((acc, e)=>acc + packet[e].length, 0) > 0)
+          this.server.io.to('connectionmanager-clients').emit('connectionmanager-update', packet);
         break;
 
       case ConnectionManager.CLIENT:

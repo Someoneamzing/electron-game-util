@@ -4,17 +4,17 @@ class GUIButton extends GUIElement {
 
   constructor(opts){
     super(opts);
-    let {click, text} = opts;
-    this.properties = {click, text};
+    let {click = null, text = null} = opts;
+    this.getters = {click, text};
 
   }
 
-  setGUI(gui){
-    super.setGUI(gui);
-    if (this.properties.click) this.on('click', (object)=>{
-      (this.properties.click.type == 'constant'?this.properties.click.constant:object[this.properties.click.property]).call(object)
-    })
-  }
+  // setGUI(gui){
+  //   super.setGUI(gui);
+  //   // if (this.properties.click) this.on('click', (object)=>{
+  //   //   (this.properties.click.type == 'constant'?this.properties.click.constant:object[this.properties.click.property]).call(object)
+  //   // })
+  // }
 
   propUpdate(prop, oldVal, newVal) {
     switch (prop) {

@@ -88,7 +88,8 @@ module.exports = class TrackList extends EventEmitter {
   getUpdatePack(){
     let pack = [];
     for(let id in this.list){
-      pack.push(this.list[id].getUpdatePkt());
+      let pkt = this.list[id].getUpdatePkt();
+      if (Object.keys(pkt).length > 1) pack.push(pkt);
     }
     return pack;
   }

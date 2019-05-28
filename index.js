@@ -8,11 +8,16 @@ try {
   ;
 }
 
+const EventEmitter = require('events');
+
+
+
 if (!Object.prototype.watch) {
   Object.defineProperties(Object.prototype, {
     watch: {
       value: function(prop, handler){
           var desc = Object.getPropertyDescriptor(this, prop);
+          console.log("Watching property " + prop  + "on: ", this);
           var newGet;
           var newSet;
           //these cases make little sense, so do nothing we won't be watching readonly descriptors
@@ -37,8 +42,9 @@ if (!Object.prototype.watch) {
           } else {
             newGet = desc.get;
             newSet = function(newVal){
-              val = handler.call(this, prop, val, newVal);
-              desc.set.call(this, val);
+              let possReturn = handler.call(this, prop, val, newVal);
+
+              desc.set.call(this, possReturn !== undefined ? possReturn : newVal);
             };
             newSet._watchHelper = {
               initialType: "accessorDescriptor",
@@ -121,12 +127,14 @@ const GameLoop = require('./classes/GameLoop.js');
 const ControlInterface = require('./classes/ControlInterface.js');
 const MathSet = require('./classes/MathSet.js');
 const GUI = require('./classes/GUI/GUI.js');
-const GUIElement = require('./classes/GUI/GUIElement.js');
-const GUITextBox = require('./classes/GUI/GUITextBox.js');
-const GUIProgressBar = require('./classes/GUI/GUIProgressBar.js');
-const GUIButton = require('./classes/GUI/GUIButton.js');
+// const GUIElement = require('./classes/GUI/GUIElement.js');
+// const GUITextBox = require('./classes/GUI/GUITextBox.js');
+// const GUIProgressBar = require('./classes/GUI/GUIProgressBar.js');
+// const GUIButton = require('./classes/GUI/GUIButton.js');
+// const GUITextField = require('./classes/GUI/GUITextField.js');
+// const GUINumberField = require('./classes/GUI/GUINumberField.js');
 const {clamp, sum, average, shareOne} = require('./classes/MathUtil.js');
 
 
-
-module.exports = {clamp, sum, average, shareOne, Camera, Circle, Client, ClientManager, ClientTrackList, CollisionGroup, ConnectionManager, ControlInterface, GameCanvas, GameObject, GameLoop, GUI, GUIElement, GUITextBox, GUIProgressBar, GUIButton, Line, MathSet, Matrix, NavMesh, NetworkWrapper, Point, Polygon, QuadTree, QueryResult, Rectangle, RectangleClickRegion, Server, Sprite, Timer: OutTimer,  TrackList, Vector};
+//, GUIElement, GUITextBox, GUITextField, GUINumberField, GUIProgressBar, GUIButton
+module.exports = {clamp, sum, average, shareOne, Camera, Circle, Client, ClientManager, ClientTrackList, CollisionGroup, ConnectionManager, ControlInterface, GameCanvas, GameObject, GameLoop, GUI, Line, MathSet, Matrix, NavMesh, NetworkWrapper, Point, Polygon, QuadTree, QueryResult, Rectangle, RectangleClickRegion, Server, Sprite, Timer: OutTimer,  TrackList, Vector};
