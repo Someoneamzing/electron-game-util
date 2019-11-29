@@ -10,13 +10,15 @@ class Sprite extends Image {
     super(width, height)
     this.name = name;
     this.toSrc = src;
+    this.renderURLS = [];
     this.found = false;
     this.i = 0;
     this.frameWidth = frameWidth;
     this.frameHeight = frameHeight;
     this.frames = this.width / this.frameWidth;
-    this.mask = null;
-    if (animate) Sprite.animate.push(this);
+    if (animate) {
+      Sprite.animate.push(this);
+    }
     Sprite.list[this.name] = this;
     Sprite.total ++;
   }
@@ -48,10 +50,21 @@ class Sprite extends Image {
     gc.ctx.drawImage(gc.opCanvas,0,0,w,h, x - w/2, y - h/2,w,h);
   }
 
+  getSpriteURL(){
+    return this.renderURLS[this.i];
+  }
+
   load(){
     return new Promise((resolve, reject)=>{
       this.onload = ()=>{
         this.found = true;
+        Sprite.staticCanvas.width = this.frameWidth;
+        Sprite.staticCanvas.height = this.frameHeight;
+        for (let i = 0; i < this.frames; i ++) {
+          Sprite.staticContext.clearRect(0,0,this.frameWidth,this.frameHeight);
+          Sprite.staticContext.drawImage(this, i * this.frameWidth, 0, this.frameWidth, this.frameHeight, 0, 0, this.frameWidth, this.frameHeight);
+          this.renderURLS.push(Sprite.staticCanvas.toDataURL());
+        }
         resolve(this);
       }
       this.onerror = ()=>{
@@ -117,6 +130,9 @@ ctx.fillRect(16,16,16,16);
 Sprite.list = {};
 Sprite.animate = [];
 Sprite.total = 0;
+
+Sprite.staticCanvas = c;
+Sprite.staticContext = ctx;
 
 Sprite.none = new Sprite('none', c.toDataURL(), 32, 32, 32, 32, false);
 

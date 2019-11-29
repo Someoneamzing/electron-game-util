@@ -41,7 +41,7 @@ let GameObject = (Base, tracklist) => {
 
     remove(){
       if ('remove' in Base.prototype) {super.remove()};
-
+      if (this[TrackList.topTrackSymbol] === tracklist) this.emit('remove')
       tracklist.remove(this);
     }
 

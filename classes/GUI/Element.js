@@ -21,6 +21,10 @@ module.exports = function(connection){
         return [];
       }
 
+      static get clientIPCFns(){
+        return [];
+      }
+
       constructor() {
         super();
         this.propUpdate = this.propUpdate.bind(this);
@@ -32,6 +36,8 @@ module.exports = function(connection){
 
         this.socketSetterHandlers = {};
         this.socketEventHandlers = {};
+        this.socketIPCHandlers = {};
+        this.boundAttrs = {};
 
         let template = document.getElementById('gui-template-' + this.constructor.elementName);
         if (template) {
@@ -45,20 +51,31 @@ module.exports = function(connection){
         this.style.top = this.getAttribute('y') + "px";
         this.style.left = this.getAttribute('x') + "px";
 
+        //getters = {<attr>:{target, constant, property, handler}, ...}
         this.getters = this.constructor.getters.map(e=>{return {attr: e, value: this.getAttribute(e)}}).reduce((obj, getter)=>{
+          //If the attr is not declared set the attr to null under object;
           if (!getter.value) {
             obj[getter.attr] = null;
             return obj;
           }
+          //Determine if this property has a handler function that should be called when the property changes.
           let n = getter.value.indexOf("!");
           let handler = null;
           if (n != -1) {
+            //Get the name of the property that has the handler.
             handler = getter.value.substring(n + 1);
           }
-          obj[getter.attr] = {constant: getter.value.indexOf("::") != 0?getter.value:null, property: getter.value.substring(2,n>2?n:getter.value.length), handler };
+          //Determine the target object/helper
+          let t = getter.value.indexOf(".");
+          let target = 'object';
+          if (t > -1) {
+            target = getter.value.substring(2,t);
+          }
+          obj[getter.attr] = {target,constant: getter.value.indexOf("::") != 0?getter.value:null, property: getter.value.substring(t>2?t+1:2,n>2?n:getter.value.length), handler };
           return obj;
         }, {});
 
+        //setters = {<attr>:{target, constant, property, handler, localProperty}, ...}
         this.setters = this.constructor.setters.map(e=>{return {attr: e[0], value: this.getAttribute(e[0]), localProperty: e[1]}}).reduce((obj, setter)=>{
           if (!setter.value) {
             obj[setter.attr] = null;
@@ -67,18 +84,29 @@ module.exports = function(connection){
           let n = setter.value.indexOf("!");
           let handler = null;
           if (n != -1) {
-            handler = setter.value.substring(n);
+            handler = setter.value.substring(n + 1);
           }
-          obj[setter.attr] = {constant: setter.value.indexOf("::") != 0?setter.value:null, property: setter.value.substring(2,n>2?n:setter.value.length), handler , localProperty: setter.localProperty};
+          let t = setter.value.indexOf(".");
+          let target = 'object';
+          if (t > -1) {
+            target = setter.value.substring(0,t);
+          }
+          obj[setter.attr] = {target, constant: setter.value.indexOf("::") != 0?setter.value:null, property: setter.value.substring(t>2?t+1:2,n>2?n:setter.value.length), handler , localProperty: setter.localProperty};
           return obj;
         }, {});
 
+        //events = {<attr>:{target, constant, property, handler, localProperty}, ...}
         this.events = this.constructor.events.map(e=>{return {attr: e[0], value: this.getAttribute(e[0]), localName: e[1]}}).reduce((obj, event)=>{
           if (!event.value) {
             opts[event.attr] = null;
             return opts;
           }
-          obj[event.attr] = {constant: event.value.indexOf("::") != 0?event.value:null, property: event.value.substring(2), localName: event.localName};
+          let t = event.value.indexOf(".");
+          let target = 'object';
+          if (t > -1) {
+            target = event.value.substring(0,t);
+          }
+          obj[event.attr] = {target,constant: event.value.indexOf("::") != 0?event.value:null, property: event.value.substring(t>2?t+1:2), localName: event.localName};
           return obj;
         }, {});
 
@@ -114,62 +142,87 @@ module.exports = function(connection){
         return "";
       }
 
-      connect(socket, object) {
+      getServerAttr(socket, attr) {
+        let getter = this.getters[attr];
+        let object = getter.target == 'object'?this.gui.accessingSockets[socket.id].object:this.gui.accessingSockets[socket.id].helpers[getter.target];
+        return getter.handler?object[getter.handler](getter.property, undefined, object[getter.property]):(getter.constant != null? getter.constant : object[getter.property])
+      }
+
+      connect(socket, object, helpers) {
+        //Notify children of connection.
         for (let child of this.children) {
           if (child.connect) child.connect(object);
         }
 
         if (this.gui.server.side == ConnectionManager.SERVER) {
           //---SERVER
-          let objectAccessor = this.gui.accessingObjects[object.netID].watchers;
           if (Object.keys(this.setters).length > 0) {
+            //Add setter fuctionality.
 
-            console.log("Addign setter functionallity to " + this.id);
+            console.log("Adding setter functionallity to " + this.id);
             this.socketSetterHandlers[socket.id] = (prop, oldVal, newVal) => {
-              // console.log(`Recieved prop update from ${socket.id} for object ${object.netID}`);
-              this.gui.accessingSockets[socket.id].object[this.setters[prop].property] = newVal;
-              for (let toSocket of this.gui.accessingObjects[this.gui.accessingSockets[socket.id].object.netID].sockets) toSocket.emit('gui-prop-update-' + this.gui.name + '-' + this.id, prop, oldVal, newVal)
+              console.log(`Recieved prop update from ${socket.id} for object ${object.netID}`);
+              let target = this.setters[prop].target == 'object'?this.gui.accessingSockets[socket.id].object:this.gui.accessingSockets[socket.id].helpers[this.setters[prop].target];
+              target[this.setters[prop].property] = newVal;
+              for (let toSocket of this.gui.accessingObjects[target.netID].sockets) toSocket.emit('gui-prop-update-' + this.gui.name + '-' + this.id, prop, oldVal, newVal)
             }
             socket.on('gui-prop-update-' + this.gui.name + '-' + this.id, this.socketSetterHandlers[socket.id]);
             for (let attr in this.setters) {
               let setter = this.setters[attr];
+              let target = setter.target == 'object'?object:this.gui.accessingSockets[socket.id].helpers[setter.target];
               if (!setter||setter.constant) continue;
-              socket.emit('gui-prop-update-' + this.gui.name + "-" + this.id, attr, undefined, setter.handler?object[setter.handler](setter.property, undefined, object[setter.property]):object[setter.property])
+              socket.emit('gui-prop-update-' + this.gui.name + "-" + this.id, attr, undefined, setter.handler?target[setter.handler](setter.property, undefined, target[setter.property]):target[setter.property])
             }
           }
           if (Object.keys(this.events).length > 0) {
             console.log("Adding event functionallity to " + this.id);
             this.socketEventHandlers[socket.id] = (prop, ...data) => {
-              // console.log(`Recieved event call from ${socket.id} for object ${object.netID}`);
-              this.gui.accessingSockets[socket.id].object[this.events[prop].property](...data);
+              console.log(`Recieved event call from ${socket.id} for object ${object.netID}`);
+              (this.events[prop].target == 'object'?this.gui.accessingSockets[socket.id].object:this.gui.accessingSockets[socket.id].helpers[this.events[prop].target])[this.events[prop].property](...data);
             }
             socket.on('gui-event-call-' + this.gui.name + '-' + this.id, this.socketEventHandlers[socket.id])
           }
+          if (this.constructor.clientIPCFns.length > 0) {
+            this.socketIPCHandlers[socket.id] = ((method, ...data) => {
+              if (!this.constructor.clientIPCFns.includes(method)) {
+                console.warn("Recieved IPC call for non-existant / unregistered method '" + method + "'. Could be a bug in a GUI element or a possible attempted ACE attack. Check the origin of this call to double check.");
+                return;
+              }
+              this[method](socket, ...data);
+            }).bind(this)
+            socket.on('gui-ipc-call-' + this.gui.name + '-' + this.id, this.socketIPCHandlers[socket.id]);
+          }
           for (let attr in this.getters) {
             let getter = this.getters[attr];
+            let target = getter.target=='object'?object:helpers[getter.target];
+            let objectAccessor = this.gui.accessingObjects[target.netID].watchers;
+
             if (!getter||getter.constant) continue;
             if (!objectAccessor[getter.property]) {
               objectAccessor[getter.property] = {};
-              this.gui.accessingSockets[socket.id].object.watch(getter.property, (prop, oldVal, newVal)=>{
-                // console.log("Object property updated... sending update packet");
+              let property = getter.property;
+              if (target.constructor.getNetProps().includes(getter.property)) property = target.constructor.getFinalProp(getter.property);
+              console.log(getter, property);
+              target.watch(property, (prop, oldVal, newVal)=>{
+                console.log("Object property updated... sending update packet");
 
-                for (let id in objectAccessor[prop]) {
-                  for (let attr in objectAccessor[prop][id]){
-                    objectAccessor[prop][id][attr](prop, oldVal, newVal);
-                  }
+                for (let id in objectAccessor[getter.property]) for (let elemID in objectAccessor[getter.property][id]) for (let attr in objectAccessor[getter.property][id][elemID]){
+                    objectAccessor[getter.property][id][elemID][attr](getter.property, oldVal, newVal);
                 }
               })
             }
 
             if (!objectAccessor[getter.property][socket.id]) objectAccessor[getter.property][socket.id] = {};
 
-            objectAccessor[getter.property][socket.id][attr] = (prop, oldVal, newVal)=>{
-              socket.emit('gui-prop-update-' + this.gui.name + '-' + this.id, attr, oldVal, getter.handler?object[getter.handler](prop, oldVal, newVal):newVal)
+            if (!objectAccessor[getter.property][socket.id][this.id]) objectAccessor[getter.property][socket.id][this.id] = {};
+
+            objectAccessor[getter.property][socket.id][this.id][attr] = (prop, oldVal, newVal)=>{
+              socket.emit('gui-prop-update-' + this.gui.name + '-' + this.id, attr, oldVal, getter.handler?target[getter.handler](prop, oldVal, newVal):newVal)
             }
 
             console.log(objectAccessor);
             console.log("First update for initial data.");
-            socket.emit('gui-prop-update-' + this.gui.name + '-' + this.id, attr, undefined, getter.handler?object[getter.handler](getter.property, undefined, object[getter.property]):object[getter.property])
+            socket.emit('gui-prop-update-' + this.gui.name + '-' + this.id, attr, undefined, getter.handler?target[getter.handler](getter.property, undefined, target[getter.property]):target[getter.property])
           }
           //_________
         } else {
@@ -185,6 +238,15 @@ module.exports = function(connection){
             })
             // this.gui.server.socket.emit('gui-prop-update-' + this.gui.name + '-' + this.id, attr, undefined, setter.handler?setter.handler(setter.property, undefined, this[setter.localProperty]):this[setter.localProperty])
 
+          }
+
+          for (let ipcMethod of this.constructor.clientIPCFns) {
+            if (typeof this[ipcMethod] !== 'function') {
+              throw new Error("Element (GUI): Attempted to bind non-existant / non-function property to ipc call on property: '" + ipcMethod + "'.");
+            }
+            this[ipcMethod] = (...data)=>{
+              this.gui.server.socket.emit('gui-ipc-call-' + this.gui.name + '-' + this.id, ipcMethod, ...data);
+            }
           }
 
           for (let attr in this.events) {
@@ -208,14 +270,19 @@ module.exports = function(connection){
           //---SERVER
           if (Object.keys(this.setters).length > 0) socket.off('gui-prop-update-' + this.gui.name + '-' + this.id, this.socketSetterHandlers[socket.id])
           if (Object.keys(this.events).length > 0) socket.off('gui-event-call-' + this.gui.name + '-' + this.id, this.socketEventHandlers[socket.id])
-          let object = this.gui.accessingSockets[socket.id].object;
+          if (this.constructor.clientIPCFns.length > 0) {
+            socket.off('gui-ipc-call-' + this.gui.name + '-' + this.id, this.socketIPCHandlers[socket.id])
+            delete this.socketIPCHandlers[socket.id];
+          }
           for (let attr in this.getters) {
             if (!this.getters[attr] || this.getters[attr].constant != null) continue;
             let getter = this.getters[attr];
-            delete this.gui.accessingObjects[object.netID].watchers[getter.property][socket.id][attr]
+            let object = getter.target == 'object'?this.gui.accessingSockets[socket.id].object:this.gui.accessingSockets[socket.id].helpers[getter.target];
+            delete this.gui.accessingObjects[object.netID].watchers[getter.property][socket.id][this.id][attr]
+            if (Object.keys(this.gui.accessingObjects[object.netID].watchers[getter.property][socket.id][this.id]).reduce((acc, e)=>{return acc + this.gui.accessingObjects[object.netID].watchers[getter.property][socket.id][this.id][e].length},0) < 1) delete this.gui.accessingObjects[object.netID].watchers[getter.property][socket.id][this.id];
             if (Object.keys(this.gui.accessingObjects[object.netID].watchers[getter.property][socket.id]).reduce((acc, e)=>{return acc + this.gui.accessingObjects[object.netID].watchers[getter.property][socket.id][e].length},0) < 1) delete this.gui.accessingObjects[object.netID].watchers[getter.property][socket.id];
             if (Object.keys(this.gui.accessingObjects[object.netID].watchers[getter.property]).length < 1) {
-              object.unwatch(getter.property);
+              object.unwatch(object.constructor.getNetProps().includes(getter.property)?object.constructor.netPropMap.get(getter.property):getter.property);
               delete this.gui.accessingObjects[object.netID].watchers[getter.property];
             }
             //this.gui.accessingSockets[socket.id].object.unwatch(this.getters[attr].property);
@@ -232,6 +299,10 @@ module.exports = function(connection){
           }
           for (let attr in this.events) {
             if (this.events[attr]) this.removeEventListener(this.events[attr].localName, this.handleDOMEvent);
+          }
+          for (let ipcMethod of this.constructor.clientIPCFns) {
+            if (typeof this[ipcMethod] != 'function') throw new Error("Attempted to unbind ipc call from non-existant / non-function property: '" + ipcMethod + "'")
+            this[ipcMethod] = noop;
           }
           //_________
         }

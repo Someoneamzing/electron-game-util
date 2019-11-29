@@ -15,6 +15,10 @@ module.exports = function(connection){
         return [['value','value']];
       }
 
+      static get clientIPCFns(){
+        return [];
+      }
+
       constructor() {
         super();
         this.value = 0;

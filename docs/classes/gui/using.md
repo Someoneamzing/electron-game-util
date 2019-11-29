@@ -38,4 +38,4 @@ Attributes are the main way of defining behaviour of an element. The syntax is a
 There are three types of attributes an element can have:
 1. Getter: This is the most basic. It is set to one of the above syntaxes and sets its property to the value of the result.
 2. Setter: This type is often used for input value attributes. Whenever the attribute changes the variable identified by the attribute definition will be set to the attribute's value.
-3. Event: This type specifies a function to call when an event on the client-side occurs, e.g. A button click, or a form submission. 
+3. Event: This type specifies a function to call when an event on the client-side occurs, e.g. A button click, or a form submission.

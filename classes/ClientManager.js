@@ -18,6 +18,23 @@ class ClientManager extends EventEmitter {
     }
   }
 
+  serialiseLists(){
+    let packet = {};
+    for(let type in this.lists){
+      let list = this.lists[type];
+      if (list.shouldSave) packet[list.type.name] = list.getAllInitPack();
+    }
+    return JSON.stringify(pack);
+  }
+
+  deserialise(data){
+    let pack = JSON.parse(data);
+    for(let type in pack){
+      let list = this.lists[type];
+      list.parseInitPack(pack[type]);
+    }
+  }
+
   setup(...rest){
     for (let type in this.lists){
       let list = this.lists[type];

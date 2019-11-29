@@ -15,6 +15,10 @@ module.exports = function(connection){
         return [];
       }
 
+      static get clientIPCFns(){
+        return [];
+      }
+
       constructor() {
         super();
         // this.propUpdate = this.propUpdate.bind(this);
