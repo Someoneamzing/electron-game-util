@@ -24,7 +24,30 @@ class Sprite extends Image {
   }
 
   draw(gc, x, y, w = this.frameWidth, h = this.frameHeight, a = 0, i = this.i){
-    gc.ctx.drawImage(this, i * this.frameWidth, 0, this.frameWidth, this.frameHeight, x - w/2, y - h/2, w, h);
+    if (a != 0) {
+      gc.ctx.save();
+      gc.ctx.translate(x, y);
+      gc.ctx.rotate(a);
+      gc.ctx.drawImage(this, i * this.frameWidth, 0, this.frameWidth, this.frameHeight, -w/2, -h/2, w, h);
+      gc.ctx.restore();
+    } else gc.ctx.drawImage(this, i * this.frameWidth, 0, this.frameWidth, this.frameHeight, x - w/2, y - h/2, w, h);
+  }
+
+  drawAsMask(gc, color, x, y, w = this.frameWidth, h = this.frameHeight, a = 0, i = this.i) {
+    gc.opctx.save();
+    let prevOp = gc.opctx.globalCompositeOperation;
+    gc.opctx.clearRect(0,0,w,h);
+    gc.opctx.globalCompositeOperation = 'source-over';
+    gc.opctx.translate(w/2, h/2);
+    gc.opctx.rotate(a);
+    gc.opctx.drawImage(this, i * this.frameWidth, 0, this.frameWidth, this.frameHeight, -w/2, -h/2, w, h);
+    gc.opctx.restore();
+    gc.opctx.globalCompositeOperation = 'source-in';
+    gc.opctx.fillStyle = color;
+    gc.opctx.fillRect(0,0, w, h);
+    gc.opctx.globalCompositeOperation = prevOp;
+
+    gc.ctx.drawImage(gc.opCanvas,0,0,w,h, x - w/2, y - h/2,w,h);
   }
 
   getSpriteURL(){
@@ -81,7 +104,7 @@ class Sprite extends Image {
   }
 
   static async loadFolder(namespace,folderName){
-    let files = fs.readdirSync(folderName);
+    let files = fs.readdirSync(folderName, {withFileTypes: true});
     for (let file of files){
       // console.log(file)
       if (VALID_SPRITE_EXT.includes(file.replace(FILE_EXT_REG,'$1'))){
