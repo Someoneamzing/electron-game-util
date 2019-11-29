@@ -126,7 +126,7 @@ module.exports = function(connection){
 
             console.log("Addign setter functionallity to " + this.id);
             this.socketSetterHandlers[socket.id] = (prop, oldVal, newVal) => {
-              console.log(`Recieved prop update from ${socket.id} for object ${object.netID}`);
+              // console.log(`Recieved prop update from ${socket.id} for object ${object.netID}`);
               this.gui.accessingSockets[socket.id].object[this.setters[prop].property] = newVal;
               for (let toSocket of this.gui.accessingObjects[this.gui.accessingSockets[socket.id].object.netID].sockets) toSocket.emit('gui-prop-update-' + this.gui.name + '-' + this.id, prop, oldVal, newVal)
             }
@@ -140,7 +140,7 @@ module.exports = function(connection){
           if (Object.keys(this.events).length > 0) {
             console.log("Adding event functionallity to " + this.id);
             this.socketEventHandlers[socket.id] = (prop, ...data) => {
-              console.log(`Recieved event call from ${socket.id} for object ${object.netID}`);
+              // console.log(`Recieved event call from ${socket.id} for object ${object.netID}`);
               this.gui.accessingSockets[socket.id].object[this.events[prop].property](...data);
             }
             socket.on('gui-event-call-' + this.gui.name + '-' + this.id, this.socketEventHandlers[socket.id])
@@ -151,7 +151,7 @@ module.exports = function(connection){
             if (!objectAccessor[getter.property]) {
               objectAccessor[getter.property] = {};
               this.gui.accessingSockets[socket.id].object.watch(getter.property, (prop, oldVal, newVal)=>{
-                console.log("Object property updated... sending update packet");
+                // console.log("Object property updated... sending update packet");
 
                 for (let id in objectAccessor[prop]) {
                   for (let attr in objectAccessor[prop][id]){

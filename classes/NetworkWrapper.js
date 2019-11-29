@@ -66,7 +66,9 @@ let NetworkWrapper = (Base, tracklist, netProps = []) => {
       set: function(val){
         this[id] = val;
         if (typeof this.dirtyProps != 'undefined' && !this.dirtyProps[prop]) this.dirtyProps[prop] = true;
-      }
+      },
+      enumerable: true,
+      configurable: true
     })
   }
 

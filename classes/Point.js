@@ -12,6 +12,16 @@ class Point {
     return other.contains(this);
   }
 
+  set(x, y) {
+    if (x instanceof Point) {
+      this.x = x.x;
+      this.y = y.y;
+    } else {
+      this.x = x;
+      this.y = y;
+    }
+  }
+
   show(gc){
     gc.stroke("#00F");
     gc.noFill();
@@ -34,6 +44,19 @@ class Point {
     } else {
       return val > 0 ? 1 : 2;
     }
+  }
+
+  static closestTo(a, others) {
+    let dist = Infinity;
+    let closest = null;
+    for (let p of others) {
+      let d = a.distance2(p);
+      if (d < dist) {
+        dist = d;
+        closest = p;
+      }
+    }
+    return closest;
   }
 }
 

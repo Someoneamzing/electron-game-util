@@ -18,6 +18,10 @@ class Rectangle extends Point {
     this.h = h;
   }
 
+  copyShape(){
+    return new Rectangle(this);
+  }
+
   contains(point){
     if (point instanceof Rectangle) {
       return this.contains(new Point(point.x - point.w/2, point.y - point.h/2)) &&
@@ -54,6 +58,15 @@ class Rectangle extends Point {
     }
   }
 
+  intersection(other) {
+    let points = [];
+    for (let edge of this.edges) {
+      let p = edge.intersection(other);
+      if (p) points.push(p);
+    }
+    return points;
+  }
+
   nearestInBounds(point) {
     return new Point(clamp(point.x,this.x - this.w/2,this.x + this.w/2), clamp(point.y, this.y - this.h/2, this.y + this.h/2));
   }
@@ -77,7 +90,7 @@ class Rectangle extends Point {
   }
 
   get corners() {
-    return [new Point(this.x - this.w/2, this.y-this.h/2), new Point(this.x + this.w/2, this.h - this.h/2), new Point(this.x - this.w/2, this.y + this.h/2), new Point(this.x + this.w/2, this.h + this.h/2)]
+    return [new Point(this.x - this.w/2, this.y-this.h/2), new Point(this.x + this.w/2, this.y - this.h/2), new Point(this.x + this.w/2, this.y + this.h/2), new Point(this.x - this.w/2, this.y + this.h/2)]
   }
 
   get edges(){
@@ -132,6 +145,10 @@ class Circle extends Point {
     this.r = r;
   }
 
+  copyShape(){
+    return new Circle(this);
+  }
+
   intersects(other) {
     if (other instanceof Circle) {
       let dist = this.distance2(other);
@@ -156,6 +173,32 @@ class Circle extends Point {
       return this.contains(other.a) && this.contains(other.b);
     } else {
       console.log("Circle: contains(multi::query) expects either a Rectangle, Circle or Point class instance. Got '" + other.constructor.name + "'." );
+    }
+  }
+
+  intersection(other) {
+    let d = new Vector(other.b.x - other.a.x, other.b.y - other.a.y);
+    let f = new Vector(other.a.x - this.x, other.a.y - this.y);
+    let a = d.dot(d);
+    let b = 2 * f.dot(d);
+    let c = f.dot(f) - this.r ** 2;
+    let discriminant = b * b - 4 * a * c;
+    if (discriminant < 0) {
+      return [];
+    } else {
+      let points = [];
+      discriminant = Math.sqrt(discriminant);
+      let t1 = (-b - discriminant) / (2 * a);
+      let t2 = (-b + discriminant) / (2 * a);
+      if (t1 >= 0 && t1 <= 1) {
+        let mag = d.mult(t1);
+        points.push(new Point(other.a.x + mag.x, other.a.y + mag.y));
+      }
+      if (t2 >= 0 && t2 <= 1) {
+        let mag = d.mult(t2);
+        points.push(new Point(other.a.x + mag.x, other.a.y + mag.y));
+      }
+      return points;
     }
   }
 
@@ -184,6 +227,29 @@ class Line {
     } else {
       this.a = new Point(a,b);
       this.b = new Point(c,d);
+    }
+  }
+
+  copyShape(){
+    return new Line(this);
+  }
+
+  set(a, b, c, d) {
+    if (a instanceof Line) {
+      this.a.x = a.a.x;
+      this.a.y = a.a.y;
+      this.b.x = a.b.x;
+      this.b.y = a.b.y;
+    } else if (a instanceof Point){
+      this.a.x = a.x;
+      this.a.y = a.y;
+      this.b.x = b.x;
+      this.b.y = b.y;
+    } else {
+      this.a.x = a;
+      this.a.y = b;
+      this.b.x = c;
+      this.b.y = d;
     }
   }
 
@@ -239,6 +305,23 @@ class Line {
 
       return false;
     } else if (other instanceof Point) return this.contains(other);
+  }
+
+  intersection(other) {
+    if (other instanceof Line) {
+      let den = (other.b.x - other.a.x) * (this.a.y - this.b.y) - (this.a.x - this.b.x) * (other.b.y - other.a.y);
+      if (den == 0) return false;
+      let numa = (other.a.y - other.b.y) * (this.a.x - other.a.x) + (other.b.x - other.a.x) * (this.a.y - other.a.y);
+      let numb = (this.a.y - this.b.y) * (this.a.x - other.a.x) + (this.b.x - this.a.x) * (this.a.y - other.a.y);
+      let ta = numa / den;
+      let tb = numb / den;
+      if (ta < 0 || ta > 1 || tb < 0 || tb > 1) return false;
+      let x = this.a.x + ta * (this.b.x - this.a.x);
+      let y = this.a.y + ta * (this.b.y - this.a.y);
+      return new Point(x, y);
+    } else {
+      throw new Error("Line: intersection expects other to be an instance of Line.")
+    }
   }
 
   static side(line, p) {
@@ -338,6 +421,10 @@ class Polygon {
     return this._y;
   }
 
+  copyShape(){
+    return new Polygon(this);
+  }
+
   area(){
     if (this.edgeLoops.length > 1) throw new Error("Polygon: Cannot calculate area of polygon made of multiple edge loops.");
     let total = 0;
@@ -361,6 +448,15 @@ class Polygon {
       return this.edges.some((e)=>other.edges.some((o)=>o.intersects(e))) || this.contains(other);
     }
     //return (this.edges.some((e)=>{e.intersects(other)})||this.contains(other));
+  }
+
+  intersection(other) {
+    let points = [];
+    for (let edge of this.edges) {
+      let p = edge.intersection(other);
+      if (p) points.push(p);
+    }
+    return points;
   }
 
   nearestVert(point){

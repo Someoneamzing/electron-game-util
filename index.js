@@ -17,7 +17,7 @@ if (!Object.prototype.watch) {
     watch: {
       value: function(prop, handler){
           var desc = Object.getPropertyDescriptor(this, prop);
-          console.log("Watching property " + prop  + "on: ", this);
+          console.log("Watching property " + prop  + " on: ", this);
           var newGet;
           var newSet;
           //these cases make little sense, so do nothing we won't be watching readonly descriptors
@@ -25,7 +25,7 @@ if (!Object.prototype.watch) {
             || (desc.value === undefined && !desc.set)
             || desc.writable === false)
             return;
-
+          console.log("Not readonly");
           if (desc.value !== undefined){
             var val = desc.value;
             newGet = function(){

@@ -15,6 +15,10 @@ module.exports = class GameCanvas {
     }
     this.zoom = 1;
     this.ctx = this.canvas.getContext('2d');
+    this.opCanvas = document.createElement('canvas');
+    this.opCanvas.width = width;
+    this.opCanvas.height = height;
+    this.opctx = this.opCanvas.getContext('2d');
     this.shouldFill = true;
     this.shouldStroke = true;
     document.body.appendChild(this.canvas);

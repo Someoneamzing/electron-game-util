@@ -2,7 +2,7 @@
 > Represents a part of a GUI. The consumer of properties and the main way of presenting info to a user.
 
 ```
-class GUI(String name, Number w, Number h, Number x, Number h) extends HTMLElement implements EventEmitter
+class GUIElement(String name, Number w, Number h, Number x, Number h) extends HTMLElement implements EventEmitter
 ```
 The GUIElement class represents elements of a GUI on the client and provides methods for interacting with the client's visuals from the server.
 

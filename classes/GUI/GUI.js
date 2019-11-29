@@ -115,7 +115,7 @@ module.exports = function(connection){
         }
       }
 
-      static loadGUIsFromFile(absoluteFilePath, destination) {
+      static async loadGUIsFromFile(absoluteFilePath, destination) {
         let data = fs.readFileSync(absoluteFilePath, 'utf-8');
         let templates = document.createElement('div');
         GUI.Element.registerAll(templates);
