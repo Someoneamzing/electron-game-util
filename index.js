@@ -13,6 +13,7 @@ const EventEmitter = require('events');
 
 
 if (!Object.prototype.watch) {
+
   Object.defineProperties(Object.prototype, {
     watch: {
       value: function(prop, handler){
@@ -32,6 +33,7 @@ if (!Object.prototype.watch) {
               return val;
             };
             newSet = function(newVal){
+              if (newVal == val) return;
               let possReturn = handler.call(this, prop, val, newVal);
               val = possReturn !== undefined ? possReturn : newVal;
             };
@@ -135,6 +137,6 @@ const GUI = require('./classes/GUI/GUI.js');
 // const GUINumberField = require('./classes/GUI/GUINumberField.js');
 const {clamp, sum, average, shareOne} = require('./classes/MathUtil.js');
 
-
+global.noop = ()=>{};
 //, GUIElement, GUITextBox, GUITextField, GUINumberField, GUIProgressBar, GUIButton
 module.exports = {clamp, sum, average, shareOne, Camera, Circle, Client, ClientManager, ClientTrackList, CollisionGroup, ConnectionManager, ControlInterface, GameCanvas, GameObject, GameLoop, GUI, Line, MathSet, Matrix, NavMesh, NetworkWrapper, Point, Polygon, QuadTree, QueryResult, Rectangle, RectangleClickRegion, Server, Sprite, Timer: OutTimer,  TrackList, Vector};

@@ -1,11 +1,12 @@
 const ConnectionManager = require("./ConnectionManager.js");
 const EventEmitter = require('events');
 
-module.exports = class TrackList extends EventEmitter {
-  constructor(side, share = true){
+class TrackList extends EventEmitter {
+  constructor(side, shouldSave = false, share = true){
     super();
     this.type = null;
     this.side = side;
+    this.shouldSave = shouldSave;
     this.list = {};
     this.new = [];
     this.share = share;
@@ -20,6 +21,7 @@ module.exports = class TrackList extends EventEmitter {
   add(obj){
     this.list[obj.netID] = obj;
     if (this.side == ConnectionManager.SERVER) this.new.push(obj.netID);
+    obj[TrackList.topTrackSymbol] = this;
     //console.log(this.new);
     //this.initPack.push(obj.getInitPkt());
   }
@@ -37,7 +39,7 @@ module.exports = class TrackList extends EventEmitter {
 
   update(){
     for(let id in this.list){
-      this.list[id].update(this.type.name);
+      if (this.list[id][TrackList.topTrackSymbol] == this) this.list[id].update(this.type.name);
     }
   }
 
@@ -64,7 +66,11 @@ module.exports = class TrackList extends EventEmitter {
   }
 
   remove(obj){
-    if (this.side == ConnectionManager.SERVER){this.removePack.push(obj.netID);}
+    if (this.side == ConnectionManager.SERVER){
+      if (this.new.includes(obj.netID)) {
+        this.new.splice(this.new.indexOf(obj.netID), 1);
+      } else this.removePack.push(obj.netID);
+    }
     delete this.list[obj.netID];
   }
 
@@ -115,3 +121,7 @@ module.exports = class TrackList extends EventEmitter {
     }
   }
 }
+
+TrackList.topTrackSymbol = Symbol();
+
+module.exports = TrackList;

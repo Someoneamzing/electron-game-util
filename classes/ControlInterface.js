@@ -26,6 +26,7 @@ class ControlInterface {
 
     window.addEventListener('keyup', (e)=>{
       let key = e.key.toUpperCase();
+      console.log(key);
       if (this.keys[key]) this.keysReleased[key] = true;
       this.keys[key] = false;
       if (this.client) this.client.send("controlinterface-key-update", this.getUpdatePkt());
@@ -72,6 +73,7 @@ class ControlInterface {
     let pack = {};
     pack.keys = this.keys;
     pack.keysPressed = this.keysPressed;
+    pack.keysReleased = this.keysReleased;
     pack.mouse = this.mouse.getInitPkt();
     return pack;
   }
@@ -80,6 +82,7 @@ class ControlInterface {
     let pack = {};
     pack.keys = this.keys;
     pack.keysPressed = this.keysPressed;
+    pack.keysReleased = this.keysReleased;
     pack.mouse = this.mouse.getUpdatePkt();
     return pack;
   }

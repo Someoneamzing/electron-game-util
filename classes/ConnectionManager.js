@@ -14,11 +14,18 @@ class ConnectionManager extends EventEmitter {
         markTime('controlinterface-init', 'once');
         socket.once('controlinterface-init', (pack)=>{
           //console.log("Connectred to new ControlInterface");
-          this.connections[socket.id].controls = pack;
+          this.connections[socket.id].controls = {nextKeysPressed: {}, nextKeysReleased: {}, ...pack};
           markTime('controlinterface-key-update', 'on');
           socket.on('controlinterface-key-update', (pack)=>{
             //console.log("Received update from a ControlInterface");
-            this.connections[socket.id].controls = pack;
+            let con = this.connections[socket.id].controls;
+            con.keys = pack.keys;
+            for (let key in pack.keysPressed)
+              if (pack.keysPressed[key]) con.nextKeysPressed[key] = true;
+            for (let key in pack.keysReleased)
+              if (pack.keysReleased[key]) con.nextKeysReleased[key] = true;
+            con.mouse = pack.mouse;
+            // = pack;
           })
         })
         markTime('connectionmanager-connect', 'on');
@@ -84,9 +91,35 @@ class ConnectionManager extends EventEmitter {
     }
   }
 
+  serialiseLists(){
+    let packet = {};
+    for(let type in this.lists){
+      let list = this.lists[type];
+      if (list.shouldSave) packet[list.type.name] = list.getAllInitPack();
+    }
+    return JSON.stringify(packet);
+  }
+
+  deserialise(data){
+    let pack = JSON.parse(data);
+    for(let type in pack){
+      let list = this.lists[type];
+      list.parseInitPack(pack[type]);
+    }
+  }
+
   update(pack){
     switch(this.side){
       case ConnectionManager.SERVER:
+        for (let socketID in this.connections) {
+          let socket = this.connections[socketID];
+          if (socket.controls){
+            socket.controls.keysPressed = socket.controls.nextKeysPressed;
+            socket.controls.keysReleased = socket.controls.nextKeysReleased;
+            socket.controls.nextKeysPressed = {};
+            socket.controls.nextKeysReleased = {};
+          }
+        }
         let packet = {};
         for(let type in this.lists){
           let list = this.lists[type]
@@ -98,6 +131,7 @@ class ConnectionManager extends EventEmitter {
         }
         if (Object.keys(packet).reduce((acc, e)=>acc + packet[e].length, 0) > 0)
           this.server.io.to('connectionmanager-clients').emit('connectionmanager-update', packet);
+
         break;
 
       case ConnectionManager.CLIENT:
