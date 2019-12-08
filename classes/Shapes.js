@@ -123,8 +123,12 @@ class Rectangle extends Point {
     }
   }
 
+  getEnclosingAABB(){
+    return this.copyShape();
+  }
+
   static fromCorners(a,b,c,d) {
-    let center = average([new Point(a,b), new Point(c,d)]);
+    let center = a instanceof Point?average([a, b]):average([new Point(a,b), new Point(c,d)]);
     let w = Math.abs(a - c);
     let h = Math.abs(b - d);
     return new Rectangle(center.x, center.y, w, h);
@@ -143,6 +147,10 @@ class Circle extends Point {
     }
     super(x,y);
     this.r = r;
+  }
+
+  getEnclosingAABB(){
+    return new Rectangle(this.x, this.y, this.r, this.r);
   }
 
   copyShape(){
@@ -228,6 +236,10 @@ class Line {
       this.a = new Point(a,b);
       this.b = new Point(c,d);
     }
+  }
+
+  getEnclosingAABB(){
+    return Rectangle.fromCorners(this.a, this.b);
   }
 
   copyShape(){
@@ -419,6 +431,10 @@ class Polygon {
 
   get y() {
     return this._y;
+  }
+
+  getEnclosingAABB(){
+    return Rectangle.fromCorners(this.extremes.sx,this.extremes.sy,this.extremes.bx,this.extremes.by);
   }
 
   copyShape(){
