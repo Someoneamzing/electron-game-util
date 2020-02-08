@@ -104,6 +104,7 @@ const uuid = require('uuid/v4');
 const fs = require('fs');
 const path = require('path');
 
+const Color = require('./classes/Color.js');
 const Point = require('./classes/Point.js');
 const {Rectangle, Circle, Line, Polygon} = require('./classes/Shapes.js');
 const {RectangleClickRegion} = require('./classes/ClickHandlers.js');
@@ -139,4 +140,4 @@ const {clamp, sum, average, shareOne} = require('./classes/MathUtil.js');
 
 global.noop = ()=>{};
 //, GUIElement, GUITextBox, GUITextField, GUINumberField, GUIProgressBar, GUIButton
-module.exports = {clamp, sum, average, shareOne, Camera, Circle, Client, ClientManager, ClientTrackList, CollisionGroup, ConnectionManager, ControlInterface, GameCanvas, GameObject, GameLoop, GUI, Line, MathSet, Matrix, NavMesh, NetworkWrapper, Point, Polygon, QuadTree, QueryResult, Rectangle, RectangleClickRegion, Server, Sprite, Timer: OutTimer,  TrackList, Vector};
+module.exports = {clamp, sum, average, shareOne, Camera, Circle, Client, ClientManager, ClientTrackList, CollisionGroup, Color, ConnectionManager, ControlInterface, GameCanvas, GameObject, GameLoop, GUI, Line, MathSet, Matrix, NavMesh, NetworkWrapper, Point, Polygon, QuadTree, QueryResult, Rectangle, RectangleClickRegion, Server, Sprite, Timer: OutTimer,  TrackList, Vector};

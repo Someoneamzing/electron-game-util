@@ -93,6 +93,10 @@ class Rectangle extends Point {
     return [new Point(this.x - this.w/2, this.y-this.h/2), new Point(this.x + this.w/2, this.y - this.h/2), new Point(this.x + this.w/2, this.y + this.h/2), new Point(this.x - this.w/2, this.y + this.h/2)]
   }
 
+  get vertices(){
+    return this.corners;
+  }
+
   get edges(){
     let res = [];
     let c = this.corners;
@@ -336,6 +340,10 @@ class Line {
     }
   }
 
+  get vertices(){
+    return [this.a, this.b]
+  }
+
   static side(line, p) {
     return Point.orient(p, line.a, line.b);
   }
@@ -537,6 +545,10 @@ class Polygon {
     }
     gc.ctx.fill("evenodd");
     gc.ctx.stroke();
+  }
+
+  get vertices(){
+    return this.edgeLoops[0].map(e=>new Point(e));
   }
 }
 
