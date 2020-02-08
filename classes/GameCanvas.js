@@ -19,9 +19,16 @@ module.exports = class GameCanvas {
     this.opCanvas.width = width;
     this.opCanvas.height = height;
     this.opctx = this.opCanvas.getContext('2d');
+    // this.ppCanvas = new OffscreenCanvas(this.w, this.h);
+    // let gl = ppCanvas.getContext('webgl');
+    // this.gl = gl;
     this.shouldFill = true;
     this.shouldStroke = true;
+    this.fontSize = 10;
     document.body.appendChild(this.canvas);
+    // this.Shader = class Shader {
+    //
+    // }
   }
 
   clear(){
@@ -30,8 +37,9 @@ module.exports = class GameCanvas {
 
   }
 
-  font(font){
-    this.ctx.font = font;
+  font(font, size){
+    this.fontSize = size;
+    this.ctx.font = size + 'px ' + font;
   }
 
   filter(filter){
@@ -43,12 +51,18 @@ module.exports = class GameCanvas {
   }
 
   text(str, x, y){
-    if(this.shouldFill){
-      this.ctx.fillText(str, x, y);
+    let lines = str.split(/\r?\n/g);
+    for (let i in lines) {
+      let line = lines[i];
+      let offset = i * this.fontSize;
+      if(this.shouldFill){
+        this.ctx.fillText(line, x, y + offset);
+      }
+      if (this.shouldStroke) {
+        this.ctx.strokeText(line, x, y + offset);
+      }
     }
-    if (this.shouldStroke) {
-      this.ctx.strokeText(str, x, y);
-    }
+
   }
 
   textAlign(h,v){
@@ -95,7 +109,13 @@ module.exports = class GameCanvas {
   }
 
   end(){
-    this.ctx.restore();
+    this.ctx.resetTransform();
+  }
+
+  putImageData(imageData, ...args) {
+    this.opctx.clearRect(0,0, imageData.width, imageData.height)
+    this.opctx.putImageData(imageData, 0, 0);
+    this.ctx.drawImage(this.opCanvas, ...args);
   }
 
   stroke(...args){
@@ -185,6 +205,13 @@ module.exports = class GameCanvas {
     this.canvas.height = height;
     this.w = width;
     this.h = height;
+
+    this.opCanvas.width = width;
+    this.opCanvas.height = height;
+  }
+
+  postProcess(shader) {
+
   }
 
   background(image){

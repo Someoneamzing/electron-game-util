@@ -40,7 +40,7 @@ module.exports = class Vector extends Point {
   }
 
   sub(one, two) {
-    if (one instanceof Vector) {
+    if (one instanceof Vector || one instanceof Point) {
       return new Vector(this.x - one.x, this.y - one.y);
     } else {
       if (!isNaN(Number(one)) && !isNaN(Number(two))) {

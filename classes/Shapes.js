@@ -93,6 +93,10 @@ class Rectangle extends Point {
     return [new Point(this.x - this.w/2, this.y-this.h/2), new Point(this.x + this.w/2, this.y - this.h/2), new Point(this.x + this.w/2, this.y + this.h/2), new Point(this.x - this.w/2, this.y + this.h/2)]
   }
 
+  get vertices(){
+    return this.corners;
+  }
+
   get edges(){
     let res = [];
     let c = this.corners;
@@ -123,8 +127,12 @@ class Rectangle extends Point {
     }
   }
 
+  getEnclosingAABB(){
+    return this.copyShape();
+  }
+
   static fromCorners(a,b,c,d) {
-    let center = average([new Point(a,b), new Point(c,d)]);
+    let center = a instanceof Point?average([a, b]):average([new Point(a,b), new Point(c,d)]);
     let w = Math.abs(a - c);
     let h = Math.abs(b - d);
     return new Rectangle(center.x, center.y, w, h);
@@ -143,6 +151,10 @@ class Circle extends Point {
     }
     super(x,y);
     this.r = r;
+  }
+
+  getEnclosingAABB(){
+    return new Rectangle(this.x, this.y, this.r, this.r);
   }
 
   copyShape(){
@@ -228,6 +240,10 @@ class Line {
       this.a = new Point(a,b);
       this.b = new Point(c,d);
     }
+  }
+
+  getEnclosingAABB(){
+    return Rectangle.fromCorners(this.a, this.b);
   }
 
   copyShape(){
@@ -322,6 +338,10 @@ class Line {
     } else {
       throw new Error("Line: intersection expects other to be an instance of Line.")
     }
+  }
+
+  get vertices(){
+    return [this.a, this.b]
   }
 
   static side(line, p) {
@@ -419,6 +439,10 @@ class Polygon {
 
   get y() {
     return this._y;
+  }
+
+  getEnclosingAABB(){
+    return Rectangle.fromCorners(this.extremes.sx,this.extremes.sy,this.extremes.bx,this.extremes.by);
   }
 
   copyShape(){
@@ -521,6 +545,10 @@ class Polygon {
     }
     gc.ctx.fill("evenodd");
     gc.ctx.stroke();
+  }
+
+  get vertices(){
+    return this.edgeLoops[0].map(e=>new Point(e));
   }
 }
 

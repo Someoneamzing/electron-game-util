@@ -1,18 +1,29 @@
 class GameLoop {
-  constructor(id,p){
+  constructor(renderLoop,p){
     this.loopID = null;
     this.p = p;
+    this.isRender = true && renderLoop;
     this.loop = ()=>{};
+    this.renderLoop = this.renderLoop.bind(this);
     this.status = 'paused';
   }
 
   pause(){
-    clearInterval(this.loopID);
+    if (!this.isRender) clearInterval(this.loopID);
     this.status = 'paused';
   }
 
+  async renderLoop(){
+    await this.loop();
+    if (this.status == 'running') requestAnimationFrame(this.renderLoop);
+  }
+
   play(){
-    this.loopID = setInterval(this.loop, this.p);
+    if (!this.isRender) {
+      this.loopID = setInterval(this.loop, this.p);
+    } else {
+      requestAnimationFrame(this.renderLoop);
+    }
     this.status = 'running';
   }
 

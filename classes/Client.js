@@ -6,7 +6,8 @@ module.exports = class Client {
     this.ip = ip;
     this.port = port;
     this.side = ConnectionManager.CLIENT;
-    this.socket = io(ip + ":" + port, {autoConnect: false});
+    this.socket = io(ip + ":" + port, {autoConnect: false, forceNode: true});
+    console.log(this.socket);
   }
 
   on(event, f){
@@ -18,6 +19,8 @@ module.exports = class Client {
   }
 
   connect(){
+    this.socket.on('connect', ()=>{console.log("Connected");this.socket.io.engine.binaryType = 'arraybuffer'})
     this.socket.connect();
+
   }
 }
