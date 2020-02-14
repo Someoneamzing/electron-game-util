@@ -6,6 +6,12 @@ class Color {
       this.g = r.g;
       this.b = r.b;
       this.a = r.a;
+    } else if (typeof r == 'string') {
+      r = r.replace('#', '');
+      this.r = parseInt(r.slice(0,2),16);
+      this.g = parseInt(r.slice(2,4),16);
+      this.b = parseInt(r.slice(4,6),16);
+      this.a = r.length > 6 ? parseInt(r.slice(6,8),16) : 255;
     } else {
       this.r = r || 0;
       this.g = g || 0;
@@ -44,6 +50,10 @@ class Color {
 
   set a(val){
     this.elements[3] = val;
+  }
+
+  get hex(){
+    return '#' + (this.r.toString(16).length == 2?'':"0") + this.r.toString(16) + (this.g.toString(16).length == 2?'':"0") + this.g.toString(16) + (this.b.toString(16).length == 2?'':"0") + this.b.toString(16) + (this.a.toString(16).length == 2?'':"0") + this.a.toString(16)
   }
 }
 

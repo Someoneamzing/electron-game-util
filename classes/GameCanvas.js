@@ -51,7 +51,7 @@ module.exports = class GameCanvas {
   }
 
   text(str, x, y){
-    let lines = str.split(/\r?\n/g);
+    let lines = (str + '').split(/\r?\n/g);
     for (let i in lines) {
       let line = lines[i];
       let offset = i * this.fontSize;
